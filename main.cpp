@@ -15,7 +15,7 @@
 #include <version.h>
 
 
-#define ASSERT(x) if (!(x)) { fprintf(stderr, "Failed at %s:%d\n", __FILE__, __LINE__); std::exit(1); }
+#define ASSERT(x) if (!(x)) { fprintf(stderr, "Failed at %s:%d\n", __FILE__, __LINE__); std::exit(1); } enum {}
 
 #define OPEN_GL_CALL(call) \
     call; \
@@ -199,9 +199,9 @@ int main(int argc, char** argv, char** env) {
     GLuint shader = crate_shader(vertex_shader.data(), fragment_shader.data());
     OPEN_GL_CALL(glUseProgram(shader));
 
-    // GLint location = glGetUniformLocation(shader, "u_Color");
-    // if (location != -1);
-    // glUniform4f(location, 0.2, 0.3, 0.8, 1.0);
+    GLint location = glGetUniformLocation(shader, "u_Color");
+    ASSERT(location != -1);
+    glUniform4f(location, 0.4, 0.3, 0.8, 1.0);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
