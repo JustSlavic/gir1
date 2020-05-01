@@ -1,6 +1,6 @@
-#ifndef ANIMEME_VERSION
-#define ANIMEME_VERSION
+#ifndef GIR1_VERSION
+#define GIR1_VERSION
 
 extern const char *version;
 
-#endif // ANIMEME_VERSION
+#endif // GIR1_VERSION

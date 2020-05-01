@@ -8,14 +8,11 @@
 #include <unistd.h>
 #endif
 
-#ifdef _WIN32
-#include <libloaderapi.h>
-#endif
 
 #include <GL/glew.h> // have to be included before glfw3
 #include <GLFW/glfw3.h>
 
-#include <version>
+#include <version.h>
 
 
 std::string get_current_path() {
@@ -24,10 +21,6 @@ std::string get_current_path() {
     char* dir_name = get_current_dir_name();
     std::string result(dir_name);
     free(dir_name);
-#endif
-
-#ifdef _WIN32
-    GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize);
 #endif
 
     return result;
@@ -128,11 +121,7 @@ void check_gl_error() {
 
 
 
-int main(int argc, char** argv, char** env)
-{
-    std::string current_path = get_current_path();
-    printf("cmd %s / %s\n", current_path.c_str(), argv[0]);
-
+int main(int argc, char** argv, char** env) {
     GLFWwindow* window;
 
     /* Initialize the library */
@@ -156,6 +145,8 @@ int main(int argc, char** argv, char** env)
       fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
       return -1;
     }
+
+    fprintf(stdout, "Status: Using GIR1 v.%s\n", version);
     fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
     fprintf(stdout, "Status: Using OpenGL v.%s\n", glGetString(GL_VERSION));
 
@@ -202,7 +193,7 @@ int main(int argc, char** argv, char** env)
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glDrawElements(GL_TRIANGLES, 6, GL_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
         check_gl_error();
 
         /* Swap front and back buffers */

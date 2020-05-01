@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=$(git describe --match "version_*")
+version=$(git describe --long --match "version_*")
 regex='version_([0-9]+)\.([0-9]+)\.([0-9]+)(-[0-9]+)?(-.*)?'
 
 [[ "$version" =~ $regex ]]
