@@ -150,6 +150,9 @@ int main(int argc, char** argv, char** env) {
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
 
+    /* Syncronise swap interval with vsync (60fps?) */
+    glfwSwapInterval(1);
+
     GLenum err = glewInit();
     if (GLEW_OK != err) {
       /* Problem: glewInit failed, something is seriously wrong. */
@@ -176,7 +179,7 @@ int main(int argc, char** argv, char** env) {
     GLuint buffer; // for storing id of the vertex buffer
     OPEN_GL_CALL(glGenBuffers(1, &buffer)); // generate me 1 buffer
     OPEN_GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, buffer)); // select this buffer (I'm about to work with it)
-    OPEN_GL_CALL(glBufferData(GL_ARRAY_BUFFER, 6*2*sizeof(float), positions, GL_STATIC_DRAW));
+    OPEN_GL_CALL(glBufferData(GL_ARRAY_BUFFER, 4*2*sizeof(float), positions, GL_STATIC_DRAW));
 
     GLuint index_buffer; // for storing id of the index buffer
     OPEN_GL_CALL(glGenBuffers(1, &index_buffer)); // generate me 1 buffer
@@ -201,14 +204,22 @@ int main(int argc, char** argv, char** env) {
 
     GLint location = glGetUniformLocation(shader, "u_Color");
     ASSERT(location != -1);
-    glUniform4f(location, 0.4, 0.3, 0.8, 1.0);
+
+    float r = 0.4;
+    float dr = 0.05;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
         /* Render here */
         OPEN_GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 
+        OPEN_GL_CALL(glUniform4f(location, r, 0.3, 0.8, 1.0));
         OPEN_GL_CALL(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+
+        if (r < 0.0) dr = 0.05;
+        if (r > 1.0) dr = -0.05;
+
+        r += dr;
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
