@@ -11,7 +11,7 @@
     if (!(x)) { \
         fprintf(stderr, "Failed at %s:%d\n", __FILE__, __LINE__); \
         std::exit(1); \
-    } enum {}
+    }
 
 #define GL_CALL(call) \
     call; \

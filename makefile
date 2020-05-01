@@ -35,15 +35,19 @@ LDFLAGS=        $(addprefix -L, $(LIB_DIR)) \
 
 
 HEADERS=        renderer \
-				vertex_buffer \
 				index_buffer \
+				vertex_array \
+				vertex_buffer \
+				vertex_buffer_layout \
 				version \
 				defines \
 				utils \
 
 
-SOURCES=        vertex_buffer \
+SOURCES=        renderer \
 				index_buffer \
+				vertex_array \
+				vertex_buffer \
 				version \
 				utils
 

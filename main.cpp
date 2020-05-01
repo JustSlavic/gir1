@@ -9,7 +9,7 @@
 
 #include <vertex_buffer.h>
 #include <index_buffer.h>
-
+#include <vertex_array.h>
 
 
 GLuint compile_shader(GLuint type, const char* source) {
@@ -104,22 +104,15 @@ int main(int argc, char** argv, char** env) {
         2, 3, 0,
     };
 
-    GLuint vertex_array_id;
-    GL_CALL(glGenVertexArrays(1, &vertex_array_id));
-    GL_CALL(glBindVertexArray(vertex_array_id));
+    VertexArray vertex_array;
+    VertexBuffer vertex_buffer(positions, 4 * 2 * sizeof(float));
 
-    VertexBuffer vb(positions, 4*2*sizeof(float));
-    IndexBuffer ib(indices, 3*2);
+    VertexBufferLayout layout;
+    layout.push<float>(2);
 
-    GL_CALL(glEnableVertexAttribArray(0));
-    GL_CALL(glVertexAttribPointer(
-        /*index*/ 0,
-        /*size of vertex*/ 2,
-        /*type*/ GL_FLOAT,
-        /*normalize?*/ GL_FALSE,
-        /*stride*/ sizeof(float) * 2,
-        /*pointer*/ NULL));
+    vertex_array.add_buffer(vertex_buffer, layout);
 
+    IndexBuffer index_buffer(indices, 3*2);
 
     std::string vertex_shader = read_whole_file("resources/shaders/vertex.vshader");
     std::string fragment_shader = read_whole_file("resources/shaders/fragment.fshader");
@@ -130,15 +123,14 @@ int main(int argc, char** argv, char** env) {
     GLint location = glGetUniformLocation(shader, "u_Color");
     ASSERT(location != -1);
 
-    float r = 0.4;
-    float dr = 0.05;
-
-
     GL_CALL(glBindVertexArray(0));
     GL_CALL(glUseProgram(0));
     GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0))
     GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0))
 
+
+    float r = 0.4;
+    float dr = 0.05;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
@@ -148,10 +140,10 @@ int main(int argc, char** argv, char** env) {
         GL_CALL(glUseProgram(shader));
         GL_CALL(glUniform4f(location, r, 0.3, 0.8, 1.0));
 
-        GL_CALL(glBindVertexArray(vertex_array_id));
-        // ib.bind();
+        vertex_array.bind();
+        index_buffer.bind();
 
-        GL_CALL(glDrawElements(GL_TRIANGLES, ib.count, GL_UNSIGNED_INT, nullptr));
+        GL_CALL(glDrawElements(GL_TRIANGLES, index_buffer.count, GL_UNSIGNED_INT, nullptr));
 
         if (r < 0.0) dr = 0.05;
         if (r > 1.0) dr = -0.05;

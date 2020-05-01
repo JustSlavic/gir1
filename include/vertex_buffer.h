@@ -10,8 +10,8 @@ struct VertexBuffer {
     VertexBuffer(const void* data, size_t size);
     ~VertexBuffer();
 
-    void bind();
-    void unbind();
+    void bind() const;
+    void unbind() const;
 };
 
 

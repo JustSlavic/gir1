@@ -5,7 +5,7 @@
 
 
 IndexBuffer::IndexBuffer(const unsigned int* data, size_t count) :count(count) {
-    static_assert(sizeof(unsigned int) == sizeof(GLuint));
+    static_assert(sizeof(unsigned int) == sizeof(GLuint), "oops");
 
     GL_CALL(glGenBuffers(1, &id)); // give me 1 buffer and store its id in &id
     GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id)); // select this buffer (I'm about to work with it)
