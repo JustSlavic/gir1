@@ -182,8 +182,8 @@ int main(int argc, char** argv, char** env) {
         /*pointer*/ NULL);
 
 
-    std::string vertex_shader = read_whole_file("resources/shaders/vertex.shader");
-    std::string fragment_shader = read_whole_file("resources/shaders/fragment.shader");
+    std::string vertex_shader = read_whole_file("resources/shaders/vertex.vshader");
+    std::string fragment_shader = read_whole_file("resources/shaders/fragment.fshader");
 
     GLuint shader = crate_shader(vertex_shader.data(), fragment_shader.data());
     glUseProgram(shader);
