@@ -1,55 +1,21 @@
 #include <stdio.h>
-#include <string>
-#include <fstream>
-#include <sstream>
-
-#ifdef __linux__
-#include <unistd.h>
-#endif
-
 
 #include <GL/glew.h> // have to be included before glfw3
 #include <GLFW/glfw3.h>
 
 
 #include <version.h>
+#include <defines.h>
 
+#include <vertex_buffer.h>
+#include <index_buffer.h>
 
-#define ASSERT(x) if (!(x)) { fprintf(stderr, "Failed at %s:%d\n", __FILE__, __LINE__); std::exit(1); } enum {}
-
-#define OPEN_GL_CALL(call) \
-    call; \
-    ASSERT(check_gl_errors());
-
-
-std::string get_current_path() {
-#ifdef __linux__
-    // ssize_t readlink(const char *path, char *buf, size_t bufsiz);
-    char* dir_name = get_current_dir_name();
-    std::string result(dir_name);
-    free(dir_name);
-#endif
-
-    return result;
-}
-
-
-std::string read_whole_file(const char *filename) {
-    std::ifstream input(filename, std::ios::in | std::ios::binary);
-    std::ostringstream content;
-
-    if (input.good()) {
-        content << input.rdbuf();
-    }
-
-    return content.str();
-}
 
 
 GLuint compile_shader(GLuint type, const char* source) {
     GLuint id = glCreateShader(type);
-    glShaderSource(id, 1, &source, nullptr);
-    glCompileShader(id);
+    GL_CALL(glShaderSource(id, 1, &source, nullptr));
+    GL_CALL(glCompileShader(id));
 
     int result;
     glGetShaderiv(id, GL_COMPILE_STATUS, &result);
@@ -60,7 +26,7 @@ GLuint compile_shader(GLuint type, const char* source) {
         // char* message = (char*) alloca(length * sizeof(char)); // C function for dynamically allocate on stack
         char* message = new char[length];
 
-        glGetShaderInfoLog(id, length, &length, message);
+        GL_CALL(glGetShaderInfoLog(id, length, &length, message));
         printf("Error in compiling shader!\n");
         printf("Error: %s\n", message);
 
@@ -90,48 +56,6 @@ GLuint crate_shader(const char* vertex_shader, const char* fragment_shader) {
 }
 
 
-bool check_gl_errors() {
-    bool good = true;
-    while (GLenum error = glGetError()) {
-        good = false;
-        switch (error) {
-        case GL_INVALID_ENUM:
-            printf("Error: An unacceptable value is specified for an enumerated argument.\n");
-            printf("       The offending command is ignored and has no other side effect than to set the error flag.\n");
-            break;
-        case GL_INVALID_VALUE:
-            printf("Error: A numeric argument is out of range.\n");
-            printf("       The offending command is ignored and has no other side effect than to set the error flag.\n");
-            break;
-        case GL_INVALID_OPERATION:
-            printf("Error: The specified operation is not allowed in the current state.\n");
-            printf("       The offending command is ignored and has no other side effect than to set the error flag.\n");
-            break;
-        case GL_INVALID_FRAMEBUFFER_OPERATION:
-            printf("Error: The framebuffer object is not complete.\n");
-            printf("       The offending command is ignored and has no other side effect than to set the error flag.\n");
-            break;
-        case GL_OUT_OF_MEMORY:
-            printf("Error: There is not enough memory left to execute the command.\n");
-            printf("       The state of the GL is undefined, except for the state of the error flags,");
-            printf("       after this error is recorded.\n");
-            break;
-        case GL_STACK_UNDERFLOW:
-            printf("Error: An attempt has been made to perform an operation that would cause an internal stack to underflow.\n");
-            break;
-        case GL_STACK_OVERFLOW:
-            printf("Error: An attempt has been made to perform an operation that would cause an internal stack to overflow.\n");
-            break;
-        case GL_NO_ERROR:  // No error has been recorded. The value of this symbolic constant is guaranteed to be 0.
-            break;
-        }
-    }
-
-    return good;
-}
-
-
-
 int main(int argc, char** argv, char** env) {
     GLFWwindow* window;
 
@@ -139,6 +63,10 @@ int main(int argc, char** argv, char** env) {
     if (!glfwInit()) {
         return -1;
     }
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
@@ -176,18 +104,15 @@ int main(int argc, char** argv, char** env) {
         2, 3, 0,
     };
 
-    GLuint buffer; // for storing id of the vertex buffer
-    OPEN_GL_CALL(glGenBuffers(1, &buffer)); // generate me 1 buffer
-    OPEN_GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, buffer)); // select this buffer (I'm about to work with it)
-    OPEN_GL_CALL(glBufferData(GL_ARRAY_BUFFER, 4*2*sizeof(float), positions, GL_STATIC_DRAW));
+    GLuint vertex_array_id;
+    GL_CALL(glGenVertexArrays(1, &vertex_array_id));
+    GL_CALL(glBindVertexArray(vertex_array_id));
 
-    GLuint index_buffer; // for storing id of the index buffer
-    OPEN_GL_CALL(glGenBuffers(1, &index_buffer)); // generate me 1 buffer
-    OPEN_GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer)); // select this buffer (I'm about to work with it)
-    OPEN_GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3*2*sizeof(GLuint), indices, GL_STATIC_DRAW));
+    VertexBuffer vb(positions, 4*2*sizeof(float));
+    IndexBuffer ib(indices, 3*2);
 
-    OPEN_GL_CALL(glEnableVertexAttribArray(0));
-    OPEN_GL_CALL(glVertexAttribPointer(
+    GL_CALL(glEnableVertexAttribArray(0));
+    GL_CALL(glVertexAttribPointer(
         /*index*/ 0,
         /*size of vertex*/ 2,
         /*type*/ GL_FLOAT,
@@ -200,7 +125,7 @@ int main(int argc, char** argv, char** env) {
     std::string fragment_shader = read_whole_file("resources/shaders/fragment.fshader");
 
     GLuint shader = crate_shader(vertex_shader.data(), fragment_shader.data());
-    OPEN_GL_CALL(glUseProgram(shader));
+    GL_CALL(glUseProgram(shader));
 
     GLint location = glGetUniformLocation(shader, "u_Color");
     ASSERT(location != -1);
@@ -208,13 +133,25 @@ int main(int argc, char** argv, char** env) {
     float r = 0.4;
     float dr = 0.05;
 
+
+    GL_CALL(glBindVertexArray(0));
+    GL_CALL(glUseProgram(0));
+    GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0))
+    GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0))
+
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
         /* Render here */
-        OPEN_GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
+        GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 
-        OPEN_GL_CALL(glUniform4f(location, r, 0.3, 0.8, 1.0));
-        OPEN_GL_CALL(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+        GL_CALL(glUseProgram(shader));
+        GL_CALL(glUniform4f(location, r, 0.3, 0.8, 1.0));
+
+        GL_CALL(glBindVertexArray(vertex_array_id));
+        // ib.bind();
+
+        GL_CALL(glDrawElements(GL_TRIANGLES, ib.count, GL_UNSIGNED_INT, nullptr));
 
         if (r < 0.0) dr = 0.05;
         if (r > 1.0) dr = -0.05;
@@ -228,7 +165,7 @@ int main(int argc, char** argv, char** env) {
         glfwPollEvents();
     }
 
-    OPEN_GL_CALL(glDeleteProgram(shader));
+    GL_CALL(glDeleteProgram(shader));
 
     glfwTerminate();
     return 0;

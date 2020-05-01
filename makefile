@@ -7,15 +7,6 @@ CXX=            g++
 # C++ standard
 CXX_STANDARD=   c++14
 
-# Source directory
-SOURCE_DIR=     src
-
-# Build directory
-BUILD_DIR=      build
-
-# Binary directory
-BIN_DIR=        bin
-
 # Include directories
 INC_DIR=        /usr/include \
 				include \
@@ -43,10 +34,18 @@ LDFLAGS=        $(addprefix -L, $(LIB_DIR)) \
 				$(addprefix -l, $(LIBS))
 
 
-HEADERS=        version \
+HEADERS=        renderer \
+				vertex_buffer \
+				index_buffer \
+				version \
+				defines \
+				utils \
 
 
-SOURCES=        version \
+SOURCES=        vertex_buffer \
+				index_buffer \
+				version \
+				utils
 
 
 TEST_SOURCES=   test \
@@ -73,16 +72,16 @@ CURRENT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 # Build project and create symlink for easy access and run
 all: prebuild version $(PROJECT)
-	ln -sfn $(BIN_DIR)/$(PROJECT) run
+	ln -sfn bin/$(PROJECT) run
 
 
 #  Build main executable
 $(PROJECT): main.cpp $(OBJECTS)
-	g++ main.cpp $(OBJECTS) -o $(BIN_DIR)/$(PROJECT) $(CXXFLAGS) $(LDFLAGS)
+	g++ main.cpp $(OBJECTS) -o bin/$(PROJECT) $(CXXFLAGS) $(LDFLAGS)
 
 
 # Build all object files
-$(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp $(HEADERS)
+build/%.o: src/%.cpp $(HEADERS)
 	g++ $< -c -o $@ $(CXXFLAGS)
 
 
@@ -92,7 +91,7 @@ bin/test: $(TEST_OBJECTS)
 
 
 # Compile test object files
-$(BUILD_DIR)/%.o: tests/%.cpp $(HEADERS)
+build/%.o: tests/%.cpp $(HEADERS)
 	g++ $< -c -o $@ $(CXXFLAGS)
 
 
@@ -110,7 +109,7 @@ version:
 # Copy compiled executable into ~/.local/bin directory
 #     (add this directory to PATH for convinience)
 #
-install: $(BIN_DIR)/$(PROJECT)
+install: bin/$(PROJECT)
 	mkdir -p ~/.local/bin
 	cp --force --interactive --update --verbose $(CURRENT_DIR)bin/$(PROJECT) ~/.local/bin/$(PROJECT)
 
@@ -130,6 +129,6 @@ prebuild:
 # Remove all object files and executables, including symlink ./run
 clean:
 	find . -type f -name '*.o' -delete
-	rm -fv $(BIN_DIR)/$(PROJECT)
-	rm -fv $(BIN_DIR)/test
+	rm -fv bin/$(PROJECT)
+	rm -fv bin/test
 	rm -fv run
