@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <iostream>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -12,7 +11,15 @@
 #include <GL/glew.h> // have to be included before glfw3
 #include <GLFW/glfw3.h>
 
+
 #include <version.h>
+
+
+#define ASSERT(x) if (!(x)) { fprintf(stderr, "Failed at %s:%d\n", __FILE__, __LINE__); std::exit(1); }
+
+#define OPEN_GL_CALL(call) \
+    call; \
+    ASSERT(check_gl_errors());
 
 
 std::string get_current_path() {
@@ -83,40 +90,44 @@ GLuint crate_shader(const char* vertex_shader, const char* fragment_shader) {
 }
 
 
-void check_gl_error() {
-    while (true) {
-        switch (glGetError()) {
+bool check_gl_errors() {
+    bool good = true;
+    while (GLenum error = glGetError()) {
+        good = false;
+        switch (error) {
         case GL_INVALID_ENUM:
             printf("Error: An unacceptable value is specified for an enumerated argument.\n");
             printf("       The offending command is ignored and has no other side effect than to set the error flag.\n");
-            std::exit(GL_INVALID_ENUM);
+            break;
         case GL_INVALID_VALUE:
             printf("Error: A numeric argument is out of range.\n");
             printf("       The offending command is ignored and has no other side effect than to set the error flag.\n");
-            std::exit(GL_INVALID_ENUM);
+            break;
         case GL_INVALID_OPERATION:
             printf("Error: The specified operation is not allowed in the current state.\n");
             printf("       The offending command is ignored and has no other side effect than to set the error flag.\n");
-            std::exit(GL_INVALID_ENUM);
+            break;
         case GL_INVALID_FRAMEBUFFER_OPERATION:
             printf("Error: The framebuffer object is not complete.\n");
             printf("       The offending command is ignored and has no other side effect than to set the error flag.\n");
-            std::exit(GL_INVALID_ENUM);
+            break;
         case GL_OUT_OF_MEMORY:
             printf("Error: There is not enough memory left to execute the command.\n");
             printf("       The state of the GL is undefined, except for the state of the error flags,");
             printf("       after this error is recorded.\n");
-            std::exit(GL_INVALID_ENUM);
+            break;
         case GL_STACK_UNDERFLOW:
             printf("Error: An attempt has been made to perform an operation that would cause an internal stack to underflow.\n");
-            std::exit(GL_INVALID_ENUM);
+            break;
         case GL_STACK_OVERFLOW:
             printf("Error: An attempt has been made to perform an operation that would cause an internal stack to overflow.\n");
-            std::exit(GL_INVALID_ENUM);
+            break;
         case GL_NO_ERROR:  // No error has been recorded. The value of this symbolic constant is guaranteed to be 0.
-            return;
+            break;
         }
     }
+
+    return good;
 }
 
 
@@ -163,38 +174,41 @@ int main(int argc, char** argv, char** env) {
     };
 
     GLuint buffer; // for storing id of the vertex buffer
-    glGenBuffers(1, &buffer); // generate me 1 buffer
-    glBindBuffer(GL_ARRAY_BUFFER, buffer); // select this buffer (I'm about to work with it)
-    glBufferData(GL_ARRAY_BUFFER, 6*2*sizeof(float), positions, GL_STATIC_DRAW);
+    OPEN_GL_CALL(glGenBuffers(1, &buffer)); // generate me 1 buffer
+    OPEN_GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, buffer)); // select this buffer (I'm about to work with it)
+    OPEN_GL_CALL(glBufferData(GL_ARRAY_BUFFER, 6*2*sizeof(float), positions, GL_STATIC_DRAW));
 
     GLuint index_buffer; // for storing id of the index buffer
-    glGenBuffers(1, &index_buffer); // generate me 1 buffer
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer); // select this buffer (I'm about to work with it)
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3*2*sizeof(GLuint), indices, GL_STATIC_DRAW);
+    OPEN_GL_CALL(glGenBuffers(1, &index_buffer)); // generate me 1 buffer
+    OPEN_GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer)); // select this buffer (I'm about to work with it)
+    OPEN_GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3*2*sizeof(GLuint), indices, GL_STATIC_DRAW));
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(
+    OPEN_GL_CALL(glEnableVertexAttribArray(0));
+    OPEN_GL_CALL(glVertexAttribPointer(
         /*index*/ 0,
         /*size of vertex*/ 2,
         /*type*/ GL_FLOAT,
         /*normalize?*/ GL_FALSE,
         /*stride*/ sizeof(float) * 2,
-        /*pointer*/ NULL);
+        /*pointer*/ NULL));
 
 
     std::string vertex_shader = read_whole_file("resources/shaders/vertex.vshader");
     std::string fragment_shader = read_whole_file("resources/shaders/fragment.fshader");
 
     GLuint shader = crate_shader(vertex_shader.data(), fragment_shader.data());
-    glUseProgram(shader);
+    OPEN_GL_CALL(glUseProgram(shader));
+
+    // GLint location = glGetUniformLocation(shader, "u_Color");
+    // if (location != -1);
+    // glUniform4f(location, 0.2, 0.3, 0.8, 1.0);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
         /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
+        OPEN_GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-        check_gl_error();
+        OPEN_GL_CALL(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -203,7 +217,7 @@ int main(int argc, char** argv, char** env) {
         glfwPollEvents();
     }
 
-    glDeleteProgram(shader);
+    OPEN_GL_CALL(glDeleteProgram(shader));
 
     glfwTerminate();
     return 0;
