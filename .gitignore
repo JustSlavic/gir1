@@ -1,0 +1,5 @@
+*.o
+version.cpp
+gir1
+run
+test
