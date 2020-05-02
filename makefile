@@ -48,6 +48,7 @@ SOURCES=        renderer \
 				index_buffer \
 				vertex_array \
 				vertex_buffer \
+				vertex_buffer_layout \
 				version \
 				utils
 

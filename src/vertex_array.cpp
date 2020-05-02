@@ -13,9 +13,9 @@ void VertexArray::add_buffer(const VertexBuffer &vb, const VertexBufferLayout &l
     bind();
     vb.bind();
 
-    unsigned int offset = 0;
+    unsigned long offset = 0;
 
-    for (int i = 0; i < layout.elements.size(); ++i) {
+    for (unsigned int i = 0; i < layout.elements.size(); ++i) {
         auto& element = layout.elements[i];
 
         GL_CALL(glEnableVertexAttribArray(i));

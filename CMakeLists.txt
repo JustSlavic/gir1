@@ -10,6 +10,7 @@ set(HEADER_FILES
         include/defines.h
         include/index_buffer.h
         include/renderer.h
+        include/shader.h
         include/utils.h
         include/version.h
         include/vertex_array.h
@@ -19,6 +20,7 @@ set(HEADER_FILES
 set(SOURCE_FILES
         src/index_buffer.cpp
         src/renderer.cpp
+        src/shader.cpp
         src/utils.cpp
         src/version.cpp
         src/vertex_array.cpp

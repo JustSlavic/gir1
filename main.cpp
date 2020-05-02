@@ -10,50 +10,7 @@
 #include <vertex_buffer.h>
 #include <index_buffer.h>
 #include <vertex_array.h>
-
-
-GLuint compile_shader(GLuint type, const char* source) {
-    GLuint id = glCreateShader(type);
-    GL_CALL(glShaderSource(id, 1, &source, nullptr));
-    GL_CALL(glCompileShader(id));
-
-    int result;
-    glGetShaderiv(id, GL_COMPILE_STATUS, &result);
-    if (result == GL_FALSE) {
-        int length;
-        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-
-        // char* message = (char*) alloca(length * sizeof(char)); // C function for dynamically allocate on stack
-        char* message = new char[length];
-
-        GL_CALL(glGetShaderInfoLog(id, length, &length, message));
-        printf("Error in compiling shader!\n");
-        printf("Error: %s\n", message);
-
-        glDeleteShader(id);
-        delete[] message;
-        return 0;
-    }
-
-    return id;
-}
-
-
-GLuint crate_shader(const char* vertex_shader, const char* fragment_shader) {
-    GLuint program = glCreateProgram();
-    GLuint vs = compile_shader(GL_VERTEX_SHADER, vertex_shader);
-    GLuint fs = compile_shader(GL_FRAGMENT_SHADER, fragment_shader);
-
-    glAttachShader(program, vs);
-    glAttachShader(program, fs);
-    glLinkProgram(program);
-    glValidateProgram(program);
-
-    glDeleteShader(vs);
-    glDeleteShader(fs);
-
-    return program;
-}
+#include <shader.h>
 
 
 int main(int argc, char** argv, char** env) {
@@ -114,20 +71,20 @@ int main(int argc, char** argv, char** env) {
 
     IndexBuffer index_buffer(indices, 3*2);
 
-    std::string vertex_shader = read_whole_file("resources/shaders/vertex.vshader");
-    std::string fragment_shader = read_whole_file("resources/shaders/fragment.fshader");
+    Shader program;
+    program.load_shader(Shader::Type::Vertex, "resources/shaders/vertex.vshader")
+           .load_shader(Shader::Type::Fragment, "resources/shaders/fragment.fshader")
+           .compile()
+           .bind();
 
-    GLuint shader = crate_shader(vertex_shader.data(), fragment_shader.data());
-    GL_CALL(glUseProgram(shader));
+    Shader::Uniform uniform = program.get_uniform("u_Color");
+    Shader::Uniform unif2 = program.get_uniform("u_Color");
+    Shader::Uniform unif3 = program.get_uniform("u_Color");
 
-    GLint location = glGetUniformLocation(shader, "u_Color");
-    ASSERT(location != -1);
-
-    GL_CALL(glBindVertexArray(0));
-    GL_CALL(glUseProgram(0));
-    GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0))
-    GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0))
-
+    vertex_array.unbind();
+    vertex_buffer.unbind();
+    index_buffer.unbind();
+    program.unbind();
 
     float r = 0.4;
     float dr = 0.05;
@@ -137,8 +94,7 @@ int main(int argc, char** argv, char** env) {
         /* Render here */
         GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 
-        GL_CALL(glUseProgram(shader));
-        GL_CALL(glUniform4f(location, r, 0.3, 0.8, 1.0));
+        program.bind().set_uniform_4f(uniform, r, 0.3, 0.8, 1.0);
 
         vertex_array.bind();
         index_buffer.bind();
@@ -156,8 +112,6 @@ int main(int argc, char** argv, char** env) {
         /* Poll for and process events */
         glfwPollEvents();
     }
-
-    GL_CALL(glDeleteProgram(shader));
 
     glfwTerminate();
     return 0;

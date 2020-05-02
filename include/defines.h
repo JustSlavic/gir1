@@ -11,11 +11,11 @@
     if (!(x)) { \
         fprintf(stderr, "Failed at %s:%d\n", __FILE__, __LINE__); \
         std::exit(1); \
-    }
+    } void SEMICOLON__()
 
 #define GL_CALL(call) \
     call; \
-    ASSERT(check_gl_errors());
+    ASSERT(check_gl_errors())
 
 
 #endif // GIR1_DEFINES
