@@ -11,6 +11,7 @@
 #include <index_buffer.h>
 #include <vertex_array.h>
 #include <shader.h>
+#include <renderer.h>
 
 
 int main(int argc, char** argv, char** env) {
@@ -78,13 +79,6 @@ int main(int argc, char** argv, char** env) {
            .bind();
 
     Shader::Uniform uniform = program.get_uniform("u_Color");
-    Shader::Uniform unif2 = program.get_uniform("u_Color");
-    Shader::Uniform unif3 = program.get_uniform("u_Color");
-
-    vertex_array.unbind();
-    vertex_buffer.unbind();
-    index_buffer.unbind();
-    program.unbind();
 
     float r = 0.4;
     float dr = 0.05;
@@ -92,14 +86,11 @@ int main(int argc, char** argv, char** env) {
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
         /* Render here */
-        GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
+        Renderer::clear();
 
         program.bind().set_uniform_4f(uniform, r, 0.3, 0.8, 1.0);
 
-        vertex_array.bind();
-        index_buffer.bind();
-
-        GL_CALL(glDrawElements(GL_TRIANGLES, index_buffer.count, GL_UNSIGNED_INT, nullptr));
+        Renderer::draw(vertex_array, index_buffer, program);
 
         if (r < 0.0) dr = 0.05;
         if (r > 1.0) dr = -0.05;
