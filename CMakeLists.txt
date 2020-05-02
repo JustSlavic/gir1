@@ -5,6 +5,7 @@ project(gir1 VERSION 0.0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 14)
 
 include_directories(include)
+add_subdirectory(tests)
 
 set(HEADER_FILES
         include/defines.h
