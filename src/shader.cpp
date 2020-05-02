@@ -64,10 +64,19 @@ Shader &Shader::compile() {
         GLuint shader_id = compile_shader(shader_type_to_gl_enum(pair.first), pair.second.c_str());
         GL_CALL(glAttachShader(id, shader_id));
         shader_ids.push_back(shader_id);
+
+        if (pair.first == Type::Vertex) {
+            printf("Vertex ");
+        } else if (pair.first == Type::Fragment) {
+            printf("Fragment ");
+        }
+        printf("shader is compiled successfully\n");
     }
 
     GL_CALL(glLinkProgram(id));
     GL_CALL(glValidateProgram(id));
+
+    printf("Shader is linked successfully\n");
 
     for (auto& shader_id : shader_ids) {
         GL_CALL(glDeleteShader(shader_id));
@@ -93,7 +102,7 @@ Shader::Uniform Shader::get_uniform(const char *name) {
     if (found != uniform_cache.end()) return {found->second};
 
     GLint location = glGetUniformLocation(id, name);
-    ASSERT(location != -1);
+//    ASSERT(location != -1);
 
     uniform_cache.emplace(std::string(name), Uniform(location));
     return {location};
@@ -107,6 +116,28 @@ Shader &Shader::set_uniform_4f(Shader::Uniform uniform, float x1, float x2, floa
 Shader &Shader::set_uniform_4f(const char *name, float x1, float x2, float x3, float x4) {
     Uniform uniform = get_uniform(name);
     set_uniform_4f(uniform, x1, x2, x3, x4);
+    return *this;
+}
+
+Shader &Shader::set_uniform_mat4f(Shader::Uniform uniform, const glm::mat4 &matrix) {
+    GL_CALL(glUniformMatrix4fv(uniform.location, 1, GL_FALSE, &matrix[0][0]));
+    return *this;
+}
+
+Shader &Shader::set_uniform_mat4f(const char *name, const glm::mat4 &matrix) {
+    Uniform uniform = get_uniform(name);
+    set_uniform_mat4f(uniform, matrix);
+    return *this;
+}
+
+Shader &Shader::set_uniform_1i(Shader::Uniform uniform, int x) {
+    GL_CALL(glUniform1i(uniform.location, x));
+    return *this;
+}
+
+Shader &Shader::set_uniform_1i(const char *name, int x) {
+    Uniform uniform = get_uniform(name);
+    set_uniform_1i(uniform, x);
     return *this;
 }
 

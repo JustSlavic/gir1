@@ -1,17 +1,18 @@
-#include <stdio.h>
+#include <cstdio>
 
 #include <GL/glew.h> // have to be included before glfw3
 #include <GLFW/glfw3.h>
-
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <version.h>
-#include <defines.h>
 
 #include <vertex_buffer.h>
 #include <index_buffer.h>
 #include <vertex_array.h>
 #include <shader.h>
 #include <renderer.h>
+#include <texture.h>
 
 
 int main(int argc, char** argv, char** env) {
@@ -26,8 +27,13 @@ int main(int argc, char** argv, char** env) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+
+    int width = 1280;
+    int height = 720;
+
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(width, height, "Hello World", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
@@ -50,11 +56,15 @@ int main(int argc, char** argv, char** env) {
     fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
     fprintf(stdout, "Status: Using OpenGL v.%s\n", glGetString(GL_VERSION));
 
-    float positions[4*2] = {
-        -0.5, -0.5,  // 0 - bottom left
-         0.5, -0.5,  // 1 - bottom right
-         0.5,  0.5,  // 2 - top right
-        -0.5,  0.5,  // 3 - top left
+    // 4x3 projection
+    glm::mat4 projection_matrix = glm::ortho(-width/2.0, width/2.0, -height/2.0, height/2.0, -1.0, 1.0);
+
+    float positions[4*4] = {
+    // external coords   texture coords
+        -200.0, -200.0,  0.0,  0.0,  // 0 - bottom left
+         200.0, -200.0,  1.0,  0.0,  // 1 - bottom right
+         200.0,  200.0,  1.0,  1.0,  // 2 - top right
+        -200.0,  200.0,  0.0,  1.0,  // 3 - top left
     };
 
     GLuint indices[] = {
@@ -62,23 +72,30 @@ int main(int argc, char** argv, char** env) {
         2, 3, 0,
     };
 
+    Renderer::init();
+
     VertexArray vertex_array;
-    VertexBuffer vertex_buffer(positions, 4 * 2 * sizeof(float));
+    VertexBuffer vertex_buffer(positions, 4 * 4 * sizeof(float));
 
     VertexBufferLayout layout;
+    layout.push<float>(2);
     layout.push<float>(2);
 
     vertex_array.add_buffer(vertex_buffer, layout);
 
     IndexBuffer index_buffer(indices, 3*2);
 
-    Shader program;
-    program.load_shader(Shader::Type::Vertex, "resources/shaders/vertex.vshader")
+    Texture wall_texture("resources/textures/fire.png");
+
+    Shader shader;
+    shader.load_shader(Shader::Type::Vertex, "resources/shaders/vertex.vshader")
            .load_shader(Shader::Type::Fragment, "resources/shaders/fragment.fshader")
            .compile()
            .bind();
 
-    Shader::Uniform uniform = program.get_uniform("u_Color");
+    Shader::Uniform uniform = shader.get_uniform("u_Color");
+    shader.set_uniform_mat4f("u_MVP", projection_matrix);
+    shader.set_uniform_1i("u_Texture", 0);
 
     float r = 0.4;
     float dr = 0.05;
@@ -88,9 +105,9 @@ int main(int argc, char** argv, char** env) {
         /* Render here */
         Renderer::clear();
 
-        program.bind().set_uniform_4f(uniform, r, 0.3, 0.8, 1.0);
+        shader.bind().set_uniform_4f(uniform, r, 0.3, 0.8, 1.0);
 
-        Renderer::draw(vertex_array, index_buffer, program);
+        Renderer::draw(vertex_array, index_buffer, shader);
 
         if (r < 0.0) dr = 0.05;
         if (r > 1.0) dr = -0.05;

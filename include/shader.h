@@ -2,6 +2,7 @@
 #define GIR1_SHADER
 
 #include <unordered_map>
+#include <glm/glm.hpp>
 
 
 struct Shader {
@@ -29,8 +30,15 @@ struct Shader {
     Shader& compile();
 
     Uniform get_uniform(const char *name);
+
+    Shader& set_uniform_1i(Uniform uniform, int x);
+    Shader& set_uniform_1i(const char *name, int x);
+
     Shader& set_uniform_4f(Uniform uniform, float x1, float x2, float x3, float x4);
     Shader& set_uniform_4f(const char *name, float x1, float x2, float x3, float x4);
+
+    Shader& set_uniform_mat4f(Uniform uniform, const glm::mat4& matrix);
+    Shader& set_uniform_mat4f(const char *name, const glm::mat4& matrix);
 
     Shader& bind();
     Shader& unbind();

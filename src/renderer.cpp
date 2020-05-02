@@ -11,3 +11,8 @@ void Renderer::draw(const VertexArray &vertex_array, const IndexBuffer &index_bu
 
     GL_CALL(glDrawElements(GL_TRIANGLES, index_buffer.count, GL_UNSIGNED_INT, nullptr));
 }
+
+void Renderer::init() {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}

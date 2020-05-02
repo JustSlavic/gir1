@@ -34,23 +34,31 @@ LDFLAGS=        $(addprefix -L, $(LIB_DIR)) \
 				$(addprefix -l, $(LIBS))
 
 
-HEADERS=        renderer \
+HEADERS=        \
+				renderer \
 				index_buffer \
 				vertex_array \
 				vertex_buffer \
 				vertex_buffer_layout \
+				shader \
+				texture \
 				version \
 				defines \
 				utils \
+				stb/stb_image \
 
 
-SOURCES=        renderer \
+SOURCES=        \
+				renderer \
 				index_buffer \
 				vertex_array \
 				vertex_buffer \
 				vertex_buffer_layout \
+				shader \
+				texture \
 				version \
-				utils
+				utils \
+				stb/stb_image \
 
 
 TEST_SOURCES=   test \
@@ -87,6 +95,7 @@ $(PROJECT): main.cpp $(OBJECTS)
 
 # Build all object files
 build/%.o: src/%.cpp $(HEADERS)
+	@mkdir -p $(dir $@)
 	g++ $< -c -o $@ $(CXXFLAGS)
 
 

@@ -12,20 +12,27 @@ set(HEADER_FILES
         include/index_buffer.h
         include/renderer.h
         include/shader.h
+        include/texture.h
         include/utils.h
         include/version.h
         include/vertex_array.h
         include/vertex_buffer.h
-        include/vertex_buffer_layout.h)
+        include/vertex_buffer_layout.h
+
+        include/stb/stb_image.h)
 
 set(SOURCE_FILES
         src/index_buffer.cpp
         src/renderer.cpp
         src/shader.cpp
+        src/texture.cpp
         src/utils.cpp
         src/version.cpp
         src/vertex_array.cpp
-        src/vertex_buffer.cpp src/vertex_buffer_layout.cpp)
+        src/vertex_buffer.cpp
+        src/vertex_buffer_layout.cpp
+
+        src/stb/stb_image.cpp)
 
 
 find_library(GL REQUIRED)
@@ -37,5 +44,8 @@ find_library(GLEW REQUIRED)
 add_executable(gir1 main.cpp
     ${HEADER_FILES} ${SOURCE_FILES})
 
-
 target_link_libraries(gir1 GL GLU glfw GLEW)
+
+add_executable(sandbox sandbox.cpp)
+
+target_link_libraries(sandbox)

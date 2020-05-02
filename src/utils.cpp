@@ -11,7 +11,6 @@
 #include <GL/glew.h>
 
 
-
 std::string read_whole_file(const char *filename) {
     std::ifstream input(filename, std::ios::in | std::ios::binary);
     std::ostringstream content;
