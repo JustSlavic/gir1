@@ -58,13 +58,17 @@ int main(int argc, char** argv, char** env) {
 
     // 4x3 projection
     glm::mat4 projection_matrix = glm::ortho(-width/2.0, width/2.0, -height/2.0, height/2.0, -1.0, 1.0);
+    glm::mat4 view_matrix = glm::translate(glm::mat4(1.0f), glm::vec3(-200, -200, 0));
+    glm::mat4 model_matrix = glm::scale(glm::mat4(1.0f), glm::vec3(200, 200, 0));
+
+    glm::mat4 mvp = projection_matrix * view_matrix * model_matrix;
 
     float positions[4*4] = {
     // external coords   texture coords
-        -200.0, -200.0,  0.0,  0.0,  // 0 - bottom left
-         200.0, -200.0,  1.0,  0.0,  // 1 - bottom right
-         200.0,  200.0,  1.0,  1.0,  // 2 - top right
-        -200.0,  200.0,  0.0,  1.0,  // 3 - top left
+        -1.0, -1.0,  0.0,  0.0,  // 0 - bottom left
+         1.0, -1.0,  1.0,  0.0,  // 1 - bottom right
+         1.0,  1.0,  1.0,  1.0,  // 2 - top right
+        -1.0,  1.0,  0.0,  1.0,  // 3 - top left
     };
 
     GLuint indices[] = {
@@ -94,7 +98,7 @@ int main(int argc, char** argv, char** env) {
            .bind();
 
     Shader::Uniform uniform = shader.get_uniform("u_Color");
-    shader.set_uniform_mat4f("u_MVP", projection_matrix);
+    shader.set_uniform_mat4f("u_MVP", mvp);
     shader.set_uniform_1i("u_Texture", 0);
 
     float r = 0.4;

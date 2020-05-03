@@ -10,9 +10,13 @@ CXX_STANDARD=   c++14
 # Include directories
 INC_DIR=        /usr/include \
 				include \
+				libs \
 
 # Library directories
 LIB_DIR=        /usr/lib/
+
+# Prebuild library
+LOCAL_LIBS=     stb \
 
 # Libraries:
 # GL - OpenGL
@@ -45,7 +49,6 @@ HEADERS=        \
 				version \
 				defines \
 				utils \
-				stb/stb_image \
 
 
 SOURCES=        \
@@ -58,40 +61,41 @@ SOURCES=        \
 				texture \
 				version \
 				utils \
-				stb/stb_image \
 
 
 TEST_SOURCES=   test \
 
 
-HEADERS :=      $(addprefix include/, $(addsuffix .h,   $(HEADERS)))
-OBJECTS :=      $(addprefix build/,   $(addsuffix .o,   $(SOURCES)))
-SOURCES :=      $(addprefix src/,     $(addsuffix .cpp, $(SOURCES)))
+HEADERS      := $(addprefix include/, $(addsuffix .h,   $(HEADERS)))
+OBJECTS      := $(addprefix build/,   $(addsuffix .o,   $(SOURCES)))
+SOURCES      := $(addprefix src/,     $(addsuffix .cpp, $(SOURCES)))
+
+STATIC_LIBS  := $(foreach lib, $(LOCAL_LIBS), $(addprefix libs/$(lib)/bin/lib, $(addsuffix .a, $(lib))))
 
 TEST_OBJECTS := $(addprefix build/,   $(addsuffix .o,   $(TEST_SOURCES)))
 TEST_SOURCES := $(addprefix test/,    $(addsuffix .cpp, $(TEST_SOURCES)))
 
-CURRENT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+CURRENT_DIR  := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 
 # ================= RULES ================= #
 
 # Unconditional rules
-.PHONY: clean all test install uninstall version prebuild
+.PHONY: all test install uninstall version prebuild postbuild clean clean_main clean_libs
 
 # Silent rules
-.SILENT: prebuild version install uninstall
+.SILENT: prebuild postbuild version install uninstall
 
 
 # Build project and create symlink for easy access and run
-all: prebuild version $(PROJECT)
+all: prebuild $(PROJECT) postbuild
 	ln -sfn bin/$(PROJECT) run
 
+# ================== MAIN ================== #
 
 #  Build main executable
-$(PROJECT): main.cpp $(OBJECTS)
-	g++ main.cpp $(OBJECTS) -o bin/$(PROJECT) $(CXXFLAGS) $(LDFLAGS)
-
+$(PROJECT): main.cpp $(OBJECTS) $(STATIC_LIBS)
+	g++ main.cpp $(OBJECTS) $(STATIC_LIBS) -o bin/$(PROJECT) $(CXXFLAGS) $(LDFLAGS)
 
 # Build all object files
 build/%.o: src/%.cpp $(HEADERS)
@@ -99,19 +103,41 @@ build/%.o: src/%.cpp $(HEADERS)
 	g++ $< -c -o $@ $(CXXFLAGS)
 
 
+# ============== LOCAL LIBRARY ============== #
+
+${STATIC_LIBS}:
+	$(MAKE) -C $(shell dirname $(dir $@))
+
+# ================= TESTS ================= #
+
 # Compile test executable
 bin/test: $(TEST_OBJECTS)
+	@mkdir -p bin
 	g++ -o bin/test $(TEST_OBJECTS) $(CXXFLAGS) -lgtest -lgtest_main -pthread
 
 
 # Compile test object files
 build/%.o: tests/%.cpp $(HEADERS)
+	@mkdir -p $(dir $@)
 	g++ $< -c -o $@ $(CXXFLAGS)
 
 
 # Run compiled tests
 test: bin/test
-	./bin/test
+	@echo "Running tests..."
+	@./bin/test
+
+
+# ================= UTILITY ================= #
+
+# Prebuild step
+prebuild: version
+	mkdir -p bin
+	chmod a+x version.sh
+
+
+# Postbuild step
+postbuild: ;
 
 
 # Run script to generate version file
@@ -124,7 +150,7 @@ version:
 #     (add this directory to PATH for convinience)
 #
 install: bin/$(PROJECT)
-	mkdir -p ~/.local/bin
+	@mkdir -p ~/.local/bin
 	cp --force --interactive --update --verbose $(CURRENT_DIR)bin/$(PROJECT) ~/.local/bin/$(PROJECT)
 
 
@@ -133,16 +159,21 @@ uninstall:
 	rm -f ~/.local/bin/$(PROJECT)
 
 
-# Prebuild step
-prebuild:
-	mkdir -p bin
-	mkdir -p build
-	chmod a+x version.sh
+#
+# Cleaning
+#
 
+.PHONY: $(LOCAL_LIBS)
 
-# Remove all object files and executables, including symlink ./run
-clean:
-	find . -type f -name '*.o' -delete
+clean: clean_main clean_libs
+
+clean_main:
+	find build -type f -name '*.o' -delete
 	rm -fv bin/$(PROJECT)
 	rm -fv bin/test
 	rm -fv run
+
+clean_libs: $(LOCAL_LIBS)
+
+$(LOCAL_LIBS):
+	$(MAKE) -C $(addprefix libs/, $@) clean
