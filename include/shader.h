@@ -1,5 +1,5 @@
-#ifndef GIR1_SHADER
-#define GIR1_SHADER
+#ifndef GIR1_SHADER_H
+#define GIR1_SHADER_H
 
 #include <unordered_map>
 #include <glm/glm.hpp>
@@ -45,4 +45,4 @@ struct Shader {
 };
 
 
-#endif // GIR1_SHADER
+#endif // GIR1_SHADER_H

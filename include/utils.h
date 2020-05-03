@@ -1,5 +1,5 @@
-#ifndef GIR1_UTIL
-#define GIR1_UTIL
+#ifndef GIR1_UTIL_H
+#define GIR1_UTIL_H
 
 #include <string>
 
@@ -11,4 +11,4 @@ std::string get_current_path();
 bool check_gl_errors();
 
 
-#endif // GIR1_UTIL
+#endif // GIR1_UTIL_H

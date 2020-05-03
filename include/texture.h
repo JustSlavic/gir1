@@ -1,5 +1,5 @@
-#ifndef GIR1_TEXTURE
-#define GIR1_TEXTURE
+#ifndef GIR1_TEXTURE_H
+#define GIR1_TEXTURE_H
 
 #include <defines.h>
 
@@ -22,5 +22,5 @@ struct Texture {
 };
 
 
-#endif // GIR1_TEXTURE
+#endif // GIR1_TEXTURE_H
 

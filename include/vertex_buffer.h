@@ -1,5 +1,5 @@
-#ifndef GIR1_VERTEX_BUFFER
-#define GIR1_VERTEX_BUFFER
+#ifndef GIR1_VERTEX_BUFFER_H
+#define GIR1_VERTEX_BUFFER_H
 
 #include <defines.h>
 
@@ -15,4 +15,4 @@ struct VertexBuffer {
 };
 
 
-#endif // GIR1_VERTEX_BUFFER
+#endif // GIR1_VERTEX_BUFFER_H

@@ -102,7 +102,7 @@ Shader::Uniform Shader::get_uniform(const char *name) {
     if (found != uniform_cache.end()) return {found->second};
 
     GLint location = glGetUniformLocation(id, name);
-//    ASSERT(location != -1);
+    ASSERT(location != -1);
 
     uniform_cache.emplace(std::string(name), Uniform(location));
     return {location};

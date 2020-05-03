@@ -1,5 +1,5 @@
-#ifndef GIR1_VERTEX_BUFFER_LAYOUT
-#define GIR1_VERTEX_BUFFER_LAYOUT
+#ifndef GIR1_VERTEX_BUFFER_LAYOUT_H
+#define GIR1_VERTEX_BUFFER_LAYOUT_H
 
 
 #include <vector>
@@ -50,4 +50,4 @@ void VertexBufferLayout::push<unsigned int>(unsigned int count);
 template <>
 void VertexBufferLayout::push<unsigned char>(unsigned int count);
 
-#endif // GIR1_VERTEX_BUFFER_LAYOUT
+#endif // GIR1_VERTEX_BUFFER_LAYOUT_H

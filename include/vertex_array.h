@@ -1,5 +1,5 @@
-#ifndef GIR1_VERTEX_ARRAY
-#define GIR1_VERTEX_ARRAY
+#ifndef GIR1_VERTEX_ARRAY_H
+#define GIR1_VERTEX_ARRAY_H
 
 
 #include <vertex_buffer.h>
@@ -19,4 +19,4 @@ struct VertexArray {
 };
 
 
-#endif // GIR1_VERTEX_ARRAY
+#endif // GIR1_VERTEX_ARRAY_H

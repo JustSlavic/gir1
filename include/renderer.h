@@ -1,5 +1,5 @@
-#ifndef GIR1_RENDERER
-#define GIR1_RENDERER
+#ifndef GIR1_RENDERER_H
+#define GIR1_RENDERER_H
 
 #include <vertex_array.h>
 #include <index_buffer.h>
@@ -13,4 +13,4 @@ struct Renderer {
 };
 
 
-#endif // GIR1_RENDERER
+#endif // GIR1_RENDERER_H

@@ -1,5 +1,5 @@
-#ifndef GIR1_DEFINES
-#define GIR1_DEFINES
+#ifndef GIR1_DEFINES_H
+#define GIR1_DEFINES_H
 
 #include <cstdio>
 #include <cstdlib>
@@ -18,6 +18,9 @@
     call; \
     ASSERT(check_gl_errors())
 
+#define STRINGIFY2(X) #X
+#define STRINGIFY(X) STRINGIFY2(X)
+
 
 typedef int8_t   i8;
 typedef int16_t  i16;
@@ -32,4 +35,4 @@ typedef uint64_t u64;
 typedef float    f32;
 typedef double   f64;
 
-#endif // GIR1_DEFINES
+#endif // GIR1_DEFINES_H
