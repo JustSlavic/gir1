@@ -84,7 +84,7 @@ CURRENT_DIR  := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 # ================= RULES ================= #
 
 # Unconditional rules
-.PHONY: $(PROJECT) test install uninstall version prebuild postbuild clean clean_main clean_libs package
+.PHONY: $(PROJECT) test version prebuild postbuild clean clean_main clean_libs package
 
 # Silent rules
 .SILENT: prebuild postbuild version install uninstall
@@ -146,20 +146,6 @@ postbuild: ;
 # Run script to generate version file
 version:
 	./version.sh
-
-
-#
-# Copy compiled executable into ~/.local/bin directory
-#     (add this directory to PATH for convinience)
-#
-install: bin/$(PROJECT)
-	@mkdir -p ~/.local/bin
-	cp --force --interactive --update --verbose $(CURRENT_DIR)bin/$(PROJECT) ~/.local/bin/$(PROJECT)
-
-
-# Remove installed executable
-uninstall:
-	rm -f ~/.local/bin/$(PROJECT)
 
 
 # Make package to ship
