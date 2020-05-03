@@ -58,6 +58,8 @@ int main(int argc, char** argv, char** env) {
     glfwMakeContextCurrent(window);
     /* Set input callback */
     glfwSetKeyCallback(window, key_callback);
+    /* Set mouse position callback */
+    glfwSetCursorPosCallback(window, cursor_position_callback);
 
     /* Syncronise swap interval with vsync (60fps?) */
     glfwSwapInterval(1);
@@ -99,10 +101,7 @@ int main(int argc, char** argv, char** env) {
 
     // 4x3 projection
     glm::mat4 projection_matrix = glm::ortho(-width/2.0, width/2.0, -height/2.0, height/2.0, -1.0, 1.0);
-    glm::mat4 view_matrix = glm::translate(glm::mat4(1.0f), glm::vec3(-200, -200, 0));
     glm::mat4 model_matrix = glm::scale(glm::mat4(1.0f), glm::vec3(200, 200, 0));
-
-    glm::mat4 mvp = projection_matrix * view_matrix * model_matrix;
 
     float positions[4*4] = {
     // external coords   texture coords
@@ -139,9 +138,10 @@ int main(int argc, char** argv, char** env) {
            .bind();
 
 //    Shader::Uniform uniform = shader.get_uniform("u_Color");
-    shader.set_uniform_mat4f("u_MVP", mvp);
     shader.set_uniform_1i("u_Texture", 0);
 
+    float camera_x = 0.0f;
+    float camera_y = 0.0f;
     float r = 0.4;
     float dr = 0.05;
 
@@ -151,6 +151,11 @@ int main(int argc, char** argv, char** env) {
         Renderer::clear();
 
 //        shader.bind().set_uniform_4f(uniform, r, 0.3, 0.8, 1.0);
+
+        glm::mat4 view_matrix = glm::translate(glm::mat4(1.0f), glm::vec3(-camera_x, -camera_y, 0));
+        glm::mat4 mvp = projection_matrix * view_matrix * model_matrix;
+
+        shader.set_uniform_mat4f("u_MVP", mvp);
 
         Renderer::draw(vertex_array, index_buffer, shader);
 
@@ -170,7 +175,6 @@ int main(int argc, char** argv, char** env) {
 
 
             {
-                static float f = 0.0f;
                 static int counter = 0;
 
                 ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
@@ -179,7 +183,9 @@ int main(int argc, char** argv, char** env) {
 //                ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
 //                ImGui::Checkbox("Another Window", &show_another_window);
 
-                ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+                ImGui::SliderFloat("camera_x", &camera_x, -0.5f*width, 0.5f*width);            // Edit 1 float using a slider from 0.0f to 1.0f
+                ImGui::SliderFloat("camera_y", &camera_y, -0.5f*height, 0.5f*height);            // Edit 1 float using a slider from 0.0f to 1.0f
+
                 ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
                 if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)

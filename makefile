@@ -84,20 +84,20 @@ CURRENT_DIR  := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 # ================= RULES ================= #
 
 # Unconditional rules
-.PHONY: all test install uninstall version prebuild postbuild clean clean_main clean_libs
+.PHONY: $(PROJECT) test install uninstall version prebuild postbuild clean clean_main clean_libs package
 
 # Silent rules
 .SILENT: prebuild postbuild version install uninstall
 
 
 # Build project and create symlink for easy access and run
-all: prebuild $(PROJECT) postbuild
+$(PROJECT): prebuild bin/$(PROJECT) postbuild
 	ln -sfn bin/$(PROJECT) run
 
 # ================== MAIN ================== #
 
 #  Build main executable
-$(PROJECT): main.cpp $(OBJECTS) $(STATIC_LIBS)
+bin/$(PROJECT): main.cpp $(OBJECTS) $(STATIC_LIBS)
 	g++ main.cpp $(OBJECTS) $(STATIC_LIBS) -o bin/$(PROJECT) $(CXXFLAGS) $(LDFLAGS)
 
 # Build all object files
@@ -162,6 +162,15 @@ uninstall:
 	rm -f ~/.local/bin/$(PROJECT)
 
 
+# Make package to ship
+package: bin/$(PROJECT)
+	rm -rf package
+	mkdir -p package
+	cp bin/$(PROJECT) package/$(PROJECT)
+	cp -r resources package/
+	zip -r gir1_$(shell ./version.sh).zip package
+
+
 #
 # Cleaning
 #
@@ -175,6 +184,7 @@ clean_main:
 	rm -fv bin/$(PROJECT)
 	rm -fv bin/test
 	rm -fv run
+	rm -fv gir1_*.zip
 
 clean_libs: $(LOCAL_LIBS)
 

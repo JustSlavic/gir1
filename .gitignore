@@ -3,8 +3,10 @@ cmake-build-debug/
 cmake-build-release/
 bin/
 build/
+package/
 *.o
 *.ini
+*.zip
 version.cpp
 gir1
 run

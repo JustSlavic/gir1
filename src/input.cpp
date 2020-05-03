@@ -26,3 +26,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 #undef PRINT_PRESSED
 
 }
+
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+    printf("mouse %5.2lf %5.2lf\n", xpos, ypos);
+}
