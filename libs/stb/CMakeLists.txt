@@ -1,4 +1,4 @@
-project(stb_image)
+project(stb)
 
 set(CMAKE_CXX_STANDARD 14)
 

@@ -4,6 +4,7 @@ cmake-build-release/
 bin/
 build/
 *.o
+*.ini
 version.cpp
 gir1
 run

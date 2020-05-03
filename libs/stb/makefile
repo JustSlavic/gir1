@@ -8,7 +8,7 @@ CXX_STANDARD=c++14
 
 all: build/stb_image.o
 	@mkdir -p bin
-	ar rcvs bin/libstb.a stb_image.h build/stb_image.o
+	ar rcvs bin/lib$(PROJECT).a build/stb_image.o
 
 build/stb_image.o: stb_image.h stb_image.cpp
 	@mkdir -p build
@@ -17,4 +17,4 @@ build/stb_image.o: stb_image.h stb_image.cpp
 
 clean:
 	find build -type f -name '*.o' -delete
-	rm -fv bin/libstb.a
+	rm -fv bin/lib$(PROJECT).a

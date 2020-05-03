@@ -8,6 +8,7 @@ include_directories(include)
 include_directories(libs)
 
 add_subdirectory(libs/stb)
+add_subdirectory(libs/imgui)
 add_subdirectory(tests)
 
 set(HEADER_FILES
@@ -16,6 +17,7 @@ set(HEADER_FILES
         include/renderer.h
         include/shader.h
         include/texture.h
+        include/input.h
         include/utils.h
         include/version.h
         include/vertex_array.h
@@ -27,6 +29,7 @@ set(SOURCE_FILES
         src/renderer.cpp
         src/shader.cpp
         src/texture.cpp
+        src/input.cpp
         src/utils.cpp
         src/version.cpp
         src/vertex_array.cpp
@@ -43,7 +46,7 @@ find_library(GLEW REQUIRED)
 add_executable(gir1 main.cpp
     ${HEADER_FILES} ${SOURCE_FILES})
 
-target_link_libraries(gir1 GL GLU glfw GLEW stb)
+target_link_libraries(gir1 GL GLU glfw GLEW stb imgui)
 
 add_executable(sandbox sandbox.cpp)
 

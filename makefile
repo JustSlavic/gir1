@@ -17,6 +17,7 @@ LIB_DIR=        /usr/lib/
 
 # Prebuild library
 LOCAL_LIBS=     stb \
+				imgui \
 
 # Libraries:
 # GL - OpenGL
@@ -46,6 +47,7 @@ HEADERS=        \
 				vertex_buffer_layout \
 				shader \
 				texture \
+				input \
 				version \
 				defines \
 				utils \
@@ -59,6 +61,7 @@ SOURCES=        \
 				vertex_buffer_layout \
 				shader \
 				texture \
+				input \
 				version \
 				utils \
 
