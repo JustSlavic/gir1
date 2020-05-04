@@ -92,11 +92,10 @@ GLFWwindow* init_window(int width, int height) {
         return nullptr;
     }
 
-    /* Depth Testing */
+    // Enable depth test
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glDisable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+    // Accept fragment if it closer to the camera than the former one
+    glDepthFunc(GL_LESS);
 
     return window;
 }
@@ -135,17 +134,37 @@ int main(int argc, char** argv, char** env) {
         return -1;
     }
 
-    float positions[4*5] = {
+    float positions[4*6*2] = {
     // external coords   texture coords
-        -1.0, -1.0,  0.0,  0.0,  0.0,  // 0 - bottom left
-         1.0, -1.0,  0.0,  1.0,  0.0,  // 1 - bottom right
-         1.0,  1.0,  0.0,  1.0,  1.0,  // 2 - top right
-        -1.0,  1.0,  0.0,  0.0,  1.0,  // 3 - top left
+        -1.0, -1.0, -1.0,  0.0, 0.0, 0.0, // 0 - bottom left
+         1.0, -1.0, -1.0,  1.0, 0.0, 1.0, // 1 - bottom right
+         1.0,  1.0, -1.0,  0.0, 1.0, 0.0, // 2 - top right
+        -1.0,  1.0, -1.0,  0.0, 0.0, 1.0, // 3 - top left
+
+        -1.0, -1.0,  1.0,  1.0, 1.0, 0.0, // 4 - far bottom left
+         1.0, -1.0,  1.0,  0.0, 1.0, 1.0, // 5 - far bottom right
+         1.0,  1.0,  1.0,  1.0, 0.0, 0.0, // 6 - far top right
+        -1.0,  1.0,  1.0,  1.0, 1.0, 1.0, // 7 - far top left
     };
 
     GLuint indices[] = {
         0, 1, 2,
         2, 3, 0,
+
+        4, 7, 6,
+        6, 5, 4,
+
+        1, 5, 6,
+        6, 2, 1,
+
+        0, 3, 7,
+        7, 4, 0,
+
+        2, 6, 7,
+        7, 3, 2,
+
+        0, 4, 5,
+        5, 1, 0,
     };
     init_imgui(window);
 
@@ -156,17 +175,17 @@ int main(int argc, char** argv, char** env) {
     fprintf(stdout, "Renderer: %s\n\n", glGetString(GL_RENDERER));
 
     VertexArray vertex_array;
-    VertexBuffer vertex_buffer(positions, 4 * 5 * sizeof(float));
+    VertexBuffer vertex_buffer(positions, 2 * 4 * 6 * sizeof(float));
 
     VertexBufferLayout layout;
     layout.push<float>(3);
-    layout.push<float>(2);
+    layout.push<float>(3);
 
     vertex_array.add_buffer(vertex_buffer, layout);
 
-    IndexBuffer index_buffer(indices, 3*2);
+    IndexBuffer index_buffer(indices, 3*2*6);
 
-    Texture fire_texture("resources/textures/fire.png");
+//    Texture texture("resources/textures/wall.png");
 
     Shader shader;
     shader.load_shader(Shader::Type::Vertex, "resources/shaders/vertex.vshader")
@@ -174,29 +193,17 @@ int main(int argc, char** argv, char** env) {
           .compile()
           .bind();
 
-//    Shader::Uniform uniform = shader.get_uniform("u_Color");
-    shader.set_uniform_1i("u_Texture", 0);
+//    shader.set_uniform_1i("u_Texture", 0);
 
     float camera_x = 0.0f;
     float camera_y = 0.0f;
-    float camera_z = 300.0f;
-
-    float fovy = 45.0f;
-
-    float r = 0.4;
-    float dr = 0.05;
+    float camera_z = 50.0f;
 
     auto& input = KeyboardState::instance();
 
-    glm::mat4 model_matrix = glm::scale(glm::mat4(1.0f), glm::vec3(50, 50, 0));
-    glm::mat4 projection_matrix = glm::perspective(glm::radians(fovy), (GLfloat)width/(GLfloat)height, 1.0f,  1000.0f);
+    glm::mat4 model_matrix = glm::scale(glm::mat4(1.0f), glm::vec3(10, 10, 10));
+    glm::mat4 projection_matrix = glm::perspective(glm::radians(45.0f), (GLfloat)width/(GLfloat)height, 1.0f,  1000.0f);
 
-//    glm::mat4 projection_matrix = glm::ortho(-width*0.5, width*0.5, -height*0.5, height*0.5, -1.0, 1.0);
-//    glm::mat4 inverse_projection = glm::inverse(projection_matrix);
-
-//    std::cout << "model matrix:\n" << model_matrix << "\n\n";
-//    std::cout << "view matrix:\n" << view_matrix << "\n\n";
-//    std::cout << "projection matrix:\n" << projection_matrix << "\n\n";
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     float camera_speed = 5;
     float rotate_x = 0.0f;
@@ -213,8 +220,6 @@ int main(int argc, char** argv, char** env) {
         if (input.S_pressed) camera_y -= camera_speed;
         if (input.D_pressed) camera_x += camera_speed;
 
-//        shader.bind().set_uniform_4f(uniform, r, 0.3, 0.8, 1.0);
-
         glm::mat4 view_matrix =
                 glm::rotate(
                 glm::rotate(
@@ -223,19 +228,15 @@ int main(int argc, char** argv, char** env) {
                 glm::radians(rotate_x), glm::vec3(1.0, 0.0, 0.0)),
                 glm::radians(rotate_y), glm::vec3(0.0, 1.0, 0.0)),
                 glm::radians(rotate_z), glm::vec3(0.0, 0.0, 1.0));
+
         glm::mat4 mvp = projection_matrix * view_matrix * model_matrix;
 
         shader.set_uniform_mat4f("u_MVP", mvp);
 
         Renderer::draw(vertex_array, index_buffer, shader);
 
-        if (r < 0.0) dr = 0.05;
-        if (r > 1.0) dr = -0.05;
-
-        r += dr;
-
         {
-            /*  Imgui rendering */
+            /*  DEAR IM GUI */
 
             // Start the Dear ImGui frame
             ImGui_ImplOpenGL3_NewFrame();
@@ -252,7 +253,7 @@ int main(int argc, char** argv, char** env) {
 
                 ImGui::SliderFloat("camera_x", &camera_x, -0.5f*width, 0.5f*width); // Edit 1 float using a slider from 0.0f to 1.0f
                 ImGui::SliderFloat("camera_y", &camera_y, -0.5f*height, 0.5f*height); // Edit 1 float using a slider from 0.0f to 1.0f
-                ImGui::SliderFloat("camera_z", &camera_z, -5, 500); // Edit 1 float using a slider from 0.0f to 1.0f
+                ImGui::SliderFloat("camera_z", &camera_z, 1, 1000); // Edit 1 float using a slider from 0.0f to 1.0f
                 ImGui::SliderFloat("rotate_x", &rotate_x, 0, 360); // Edit 1 float using a slider from 0.0f to 1.0f
                 ImGui::SliderFloat("rotate_y", &rotate_y, 0, 360); // Edit 1 float using a slider from 0.0f to 1.0f
                 ImGui::SliderFloat("rotate_z", &rotate_z, 0, 360); // Edit 1 float using a slider from 0.0f to 1.0f
