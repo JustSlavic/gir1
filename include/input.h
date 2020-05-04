@@ -14,6 +14,11 @@ struct KeyboardState {
     double RMB_drag_x = 0;
     double RMB_drag_y = 0;
 
+    bool W_pressed = false;
+    bool A_pressed = false;
+    bool S_pressed = false;
+    bool D_pressed = false;
+
     static KeyboardState& instance();
 private:
     KeyboardState() = default;

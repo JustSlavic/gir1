@@ -50,4 +50,4 @@ target_link_libraries(gir1 GL GLU glfw GLEW stb imgui)
 
 add_executable(sandbox sandbox.cpp)
 
-target_link_libraries(sandbox)
+target_link_libraries(sandbox GL GLU glfw GLEW)

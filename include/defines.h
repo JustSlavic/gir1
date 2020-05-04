@@ -35,4 +35,9 @@ typedef uint64_t u64;
 typedef float    f32;
 typedef double   f64;
 
+enum GIR1_ERROR {
+    ERROR_GLFW_FAILED = 256,
+    ERROT_GLEW_FAILED = 257,
+};
+
 #endif // GIR1_DEFINES_H

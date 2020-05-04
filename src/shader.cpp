@@ -76,7 +76,7 @@ Shader &Shader::compile() {
     GL_CALL(glLinkProgram(id));
     GL_CALL(glValidateProgram(id));
 
-    printf("Shader is linked successfully\n");
+    printf("Shaders linked successfully\n");
 
     for (auto& shader_id : shader_ids) {
         GL_CALL(glDeleteShader(shader_id));

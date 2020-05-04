@@ -53,12 +53,10 @@ std::ostream& operator<<(std::ostream& os, glm::vec4 v) {
 }
 
 
-int main(int argc, char** argv, char** env) {
-    glfwSetErrorCallback(glfw_error_callback);
-
-    /* Initialize the library */
+GLFWwindow* init_window(int width, int height) {
     if (!glfwInit()) {
-        return -1;
+        fprintf(stderr, "Error: GLFW Init failed!\n");
+        std::exit(ERROR_GLFW_FAILED);
     }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -66,15 +64,12 @@ int main(int argc, char** argv, char** env) {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint(GLFW_SAMPLES, 4); // Enable 4x anti aliasing
 
-    int width = 1280;
-    int height = 720;
-
-    /* Create a windowed mode window and its OpenGL context */
-    GLFWwindow* window = glfwCreateWindow(width, height, "Hello World", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(width, height, "Hello World", nullptr, nullptr);
     if (!window) {
-        glfwTerminate();
-        return -1;
+        fprintf(stderr, "Error: GLFW CreateWindow failed!\n");
+        std::exit(ERROR_GLFW_FAILED);
     }
 
     /* Make the window's context current */
@@ -85,22 +80,29 @@ int main(int argc, char** argv, char** env) {
     glfwSetCursorPosCallback(window, cursor_position_callback);
     /* Set mouse buttons presses */
     glfwSetMouseButtonCallback(window, mouse_button_callback);
-
-    /* Disable cursor */
-//    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-    /* Syncronise swap interval with vsync (60fps?) */
+    /* Enable vsync */
     glfwSwapInterval(1);
+    /* Disable cursor visibility */
+    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     GLenum err = glewInit();
     if (GLEW_OK != err) {
-      /* Problem: glewInit failed, something is seriously wrong. */
-      fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
-      return -1;
+        /* Problem: glewInit failed, something is seriously wrong. */
+        fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+        return nullptr;
     }
 
-    // ========== IMGUI =========
+    /* Depth Testing */
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glDisable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
+    return window;
+}
+
+
+void init_imgui(GLFWwindow *window) {
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -110,22 +112,28 @@ int main(int argc, char** argv, char** env) {
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
-    //ImGui::StyleColorsClassic();
+    // ImGui::StyleColorsClassic();
+
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 130");
 
-    // load font
     io.Fonts->AddFontFromFileTTF("resources/fonts/Cousine-Regular.ttf", 15.0f);
-
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-    // ==========================
+}
 
 
-    fprintf(stdout, "Status: Using GIR1 v.%s\n", version);
-    fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
-    fprintf(stdout, "Status: Using OpenGL v.%s\n", glGetString(GL_VERSION));
+int main(int argc, char** argv, char** env) {
+    glfwSetErrorCallback(glfw_error_callback);
+
+    int width = 1280;
+    int height = 720;
+
+    /* Create a windowed mode window and its OpenGL context */
+    auto window = init_window(width, height);
+    if (!window) {
+        glfwTerminate();
+        return -1;
+    }
 
     float positions[4*5] = {
     // external coords   texture coords
@@ -139,8 +147,13 @@ int main(int argc, char** argv, char** env) {
         0, 1, 2,
         2, 3, 0,
     };
+    init_imgui(window);
 
     Renderer::init();
+    fprintf(stdout, "GIR1   v.%s\n", version);
+    fprintf(stdout, "GLEW   v.%s\n", glewGetString(GLEW_VERSION));
+    fprintf(stdout, "OpenGL v.%s\n", glGetString(GL_VERSION));
+    fprintf(stdout, "Renderer: %s\n\n", glGetString(GL_RENDERER));
 
     VertexArray vertex_array;
     VertexBuffer vertex_buffer(positions, 4 * 5 * sizeof(float));
@@ -157,9 +170,9 @@ int main(int argc, char** argv, char** env) {
 
     Shader shader;
     shader.load_shader(Shader::Type::Vertex, "resources/shaders/vertex.vshader")
-           .load_shader(Shader::Type::Fragment, "resources/shaders/fragment.fshader")
-           .compile()
-           .bind();
+          .load_shader(Shader::Type::Fragment, "resources/shaders/fragment.fshader")
+          .compile()
+          .bind();
 
 //    Shader::Uniform uniform = shader.get_uniform("u_Color");
     shader.set_uniform_1i("u_Texture", 0);
@@ -176,23 +189,40 @@ int main(int argc, char** argv, char** env) {
     auto& input = KeyboardState::instance();
 
     glm::mat4 model_matrix = glm::scale(glm::mat4(1.0f), glm::vec3(50, 50, 0));
-    glm::mat4 view_matrix = glm::translate(glm::mat4(1.0f), glm::vec3(-camera_x, -camera_y, -camera_z));
     glm::mat4 projection_matrix = glm::perspective(glm::radians(fovy), (GLfloat)width/(GLfloat)height, 1.0f,  1000.0f);
 
 //    glm::mat4 projection_matrix = glm::ortho(-width*0.5, width*0.5, -height*0.5, height*0.5, -1.0, 1.0);
 //    glm::mat4 inverse_projection = glm::inverse(projection_matrix);
 
-    std::cout << "model matrix:\n" << model_matrix << "\n\n";
-    std::cout << "view matrix:\n" << view_matrix << "\n\n";
-    std::cout << "projection matrix:\n" << projection_matrix << "\n\n";
+//    std::cout << "model matrix:\n" << model_matrix << "\n\n";
+//    std::cout << "view matrix:\n" << view_matrix << "\n\n";
+//    std::cout << "projection matrix:\n" << projection_matrix << "\n\n";
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    float camera_speed = 5;
+    float rotate_x = 0.0f;
+    float rotate_y = 0.0f;
+    float rotate_z = 0.0f;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
         /* Render here */
         Renderer::clear();
 
+        if (input.W_pressed) camera_y += camera_speed;
+        if (input.A_pressed) camera_x -= camera_speed;
+        if (input.S_pressed) camera_y -= camera_speed;
+        if (input.D_pressed) camera_x += camera_speed;
+
 //        shader.bind().set_uniform_4f(uniform, r, 0.3, 0.8, 1.0);
 
+        glm::mat4 view_matrix =
+                glm::rotate(
+                glm::rotate(
+                glm::rotate(
+                glm::translate(glm::mat4(1.0f), glm::vec3(-camera_x, -camera_y, -camera_z)),
+                glm::radians(rotate_x), glm::vec3(1.0, 0.0, 0.0)),
+                glm::radians(rotate_y), glm::vec3(0.0, 1.0, 0.0)),
+                glm::radians(rotate_z), glm::vec3(0.0, 0.0, 1.0));
         glm::mat4 mvp = projection_matrix * view_matrix * model_matrix;
 
         shader.set_uniform_mat4f("u_MVP", mvp);
@@ -204,7 +234,6 @@ int main(int argc, char** argv, char** env) {
 
         r += dr;
 
-
         {
             /*  Imgui rendering */
 
@@ -213,32 +242,34 @@ int main(int argc, char** argv, char** env) {
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
 
-
             {
                 static int counter = 0;
 
                 ImGui::Begin("Girl debug view"); // Create a window called "Hello, world!" and append into it.
-
                 ImGui::Text("Camera positions:"); // Display some text (you can use a format strings too)
 //                ImGui::Checkbox("Demo Window", &show_demo_window); // Edit bools storing our window open/close state
 //                ImGui::Checkbox("Another Window", &show_another_window);
 
                 ImGui::SliderFloat("camera_x", &camera_x, -0.5f*width, 0.5f*width); // Edit 1 float using a slider from 0.0f to 1.0f
                 ImGui::SliderFloat("camera_y", &camera_y, -0.5f*height, 0.5f*height); // Edit 1 float using a slider from 0.0f to 1.0f
-                ImGui::SliderFloat("camera_z", &camera_z, 1, 500); // Edit 1 float using a slider from 0.0f to 1.0f
+                ImGui::SliderFloat("camera_z", &camera_z, -5, 500); // Edit 1 float using a slider from 0.0f to 1.0f
+                ImGui::SliderFloat("rotate_x", &rotate_x, 0, 360); // Edit 1 float using a slider from 0.0f to 1.0f
+                ImGui::SliderFloat("rotate_y", &rotate_y, 0, 360); // Edit 1 float using a slider from 0.0f to 1.0f
+                ImGui::SliderFloat("rotate_z", &rotate_z, 0, 360); // Edit 1 float using a slider from 0.0f to 1.0f
 
                 ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-                if (ImGui::Button("Button")) // Buttons return true when clicked (most widgets return true when edited/activated)
-                    counter++;
+                // Buttons return true when clicked (most widgets return true when edited/activated)
+                if (ImGui::Button("Button")) { counter++; }
                 ImGui::SameLine();
                 ImGui::Text("counter = %d", counter);
 
                 double cursor_x, cursor_y;
                 glfwGetCursorPos(window, &cursor_x, &cursor_y);
+
                 ImGui::Text("Cursor: (%5.2lf, %5.2lf)", cursor_x, cursor_y);
                 ImGui::Text("LMB drag: (%5.2lf, %5.2lf)", input.LMB_drag_x, input.LMB_drag_y);
-//                ImGui::Text("camera displacement: (%5.2f, %5.2f)", camera_displacement.x, camera_displacement.y);
+                ImGui::Text("RMB drag: (%5.2lf, %5.2lf)", input.RMB_drag_x, input.RMB_drag_y);
 
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
                 ImGui::End();

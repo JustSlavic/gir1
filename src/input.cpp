@@ -3,6 +3,7 @@
 
 #include <cstdio>
 
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 
 #define HANDLE_KEY(KEY, ACTION, CALL) \
@@ -10,10 +11,17 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 #define PRINT_PRESSED(KEY) printf("Pressed " STRINGIFY(KEY) "\n")
 
-    HANDLE_KEY(W, PRESS, PRINT_PRESSED(W));
-    HANDLE_KEY(S, PRESS, PRINT_PRESSED(S));
-    HANDLE_KEY(A, PRESS, PRINT_PRESSED(A));
-    HANDLE_KEY(D, PRESS, PRINT_PRESSED(D));
+    auto& input = KeyboardState::instance();
+
+    HANDLE_KEY(W, PRESS, input.W_pressed = true);
+    HANDLE_KEY(W, RELEASE, input.W_pressed = false);
+    HANDLE_KEY(S, PRESS, input.S_pressed = true);
+    HANDLE_KEY(S, RELEASE, input.S_pressed = false);
+    HANDLE_KEY(A, PRESS, input.A_pressed = true);
+    HANDLE_KEY(A, RELEASE, input.A_pressed = false);
+    HANDLE_KEY(D, PRESS, input.D_pressed = true);
+    HANDLE_KEY(D, RELEASE, input.D_pressed = false);
+
 
     HANDLE_KEY(LEFT, PRESS, PRINT_PRESSED(left));
     HANDLE_KEY(RIGHT, PRESS, PRINT_PRESSED(right));
