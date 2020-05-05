@@ -202,6 +202,7 @@ int main(int argc, char** argv, char** env) {
     shader.set_uniform_1i("u_Texture", 0);
 
     auto& input = KeyboardState::instance();
+    glfwGetCursorPos(window, &input.cursor_x, &input.cursor_y);
 
     glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, 1));
     glm::mat4 projection = glm::perspective(glm::radians(30.0f), (GLfloat)width / (GLfloat)height, 1.0f, 1000.0f);
