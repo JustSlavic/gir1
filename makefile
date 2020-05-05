@@ -47,6 +47,7 @@ HEADERS=        \
 				vertex_buffer_layout \
 				shader \
 				texture \
+				camera \
 				input \
 				version \
 				defines \
@@ -61,6 +62,7 @@ SOURCES=        \
 				vertex_buffer_layout \
 				shader \
 				texture \
+				camera \
 				input \
 				version \
 				utils \

@@ -33,6 +33,6 @@ void Texture::bind(unsigned int slot) const {
     GL_CALL(glBindTexture(GL_TEXTURE_2D, id));
 }
 
-void Texture::unbind() const {
+void Texture::unbind() {
     GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
 }

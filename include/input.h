@@ -6,6 +6,9 @@
 struct KeyboardState {
     double cursor_x = 0;
     double cursor_y = 0;
+
+    double cursor_dx = 0;
+    double cursor_dy = 0;
     bool LMB_pressed = false;
     bool RMB_pressed = false;
 
@@ -18,6 +21,16 @@ struct KeyboardState {
     bool A_pressed = false;
     bool S_pressed = false;
     bool D_pressed = false;
+
+    bool R_pressed = false;
+    bool F_pressed = false;
+    bool Z_pressed = false;
+    bool X_pressed = false;
+
+    bool UP_pressed = false;
+    bool DOWN_pressed = false;
+    bool LEFT_pressed = false;
+    bool RIGHT_pressed = false;
 
     static KeyboardState& instance();
 private:

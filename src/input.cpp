@@ -22,11 +22,24 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     HANDLE_KEY(D, PRESS, input.D_pressed = true);
     HANDLE_KEY(D, RELEASE, input.D_pressed = false);
 
+    HANDLE_KEY(R, PRESS, input.R_pressed = true);
+    HANDLE_KEY(R, RELEASE, input.R_pressed = false);
+    HANDLE_KEY(F, PRESS, input.F_pressed = true);
+    HANDLE_KEY(F, RELEASE, input.F_pressed = false);
 
-    HANDLE_KEY(LEFT, PRESS, PRINT_PRESSED(left));
-    HANDLE_KEY(RIGHT, PRESS, PRINT_PRESSED(right));
-    HANDLE_KEY(UP, PRESS, PRINT_PRESSED(up));
-    HANDLE_KEY(DOWN, PRESS, PRINT_PRESSED(down));
+    HANDLE_KEY(Z, PRESS, input.Z_pressed = true);
+    HANDLE_KEY(Z, RELEASE, input.Z_pressed = false);
+    HANDLE_KEY(X, PRESS, input.X_pressed = true);
+    HANDLE_KEY(X, RELEASE, input.X_pressed = false);
+
+    HANDLE_KEY(LEFT, PRESS, input.LEFT_pressed = true);
+    HANDLE_KEY(LEFT, RELEASE, input.LEFT_pressed = false);
+    HANDLE_KEY(RIGHT, PRESS, input.RIGHT_pressed = true);
+    HANDLE_KEY(RIGHT, RELEASE, input.RIGHT_pressed = false);
+    HANDLE_KEY(UP, PRESS, input.UP_pressed = true);
+    HANDLE_KEY(UP, RELEASE, input.UP_pressed = false);
+    HANDLE_KEY(DOWN, PRESS, input.DOWN_pressed = true);
+    HANDLE_KEY(DOWN, RELEASE, input.DOWN_pressed = false);
 
     HANDLE_KEY(ESCAPE, PRESS, std::exit(0));
 
@@ -35,26 +48,16 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 }
 
-void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+void cursor_position_callback(GLFWwindow* window, double x, double y) {
     // get previous position
     auto& input = KeyboardState::instance();
 
-    if (input.LMB_pressed) {
-        input.LMB_drag_x = xpos - input.cursor_x;
-        input.LMB_drag_y = ypos - input.cursor_y;
-//        printf("LMB DRAG (%3.0lf, %3.0lf) pixels\n", xpos - input.cursor_x, ypos - input.cursor_y);
-    }
-    if (input.RMB_pressed) {
-        input.RMB_drag_x = xpos - input.cursor_x;
-        input.RMB_drag_y = ypos - input.cursor_y;
-//        printf("RMB DRAG (%3.0lf, %3.0lf) pixels\n", xpos - input.cursor_x, ypos - input.cursor_y);
-    }
-    // if left button is pressed, change view matrix (translation)
-    // if right button is pressed, change view matrix (rotation)
+    input.cursor_dx = x - input.cursor_x;
+    input.cursor_dy = y - input.cursor_y;
 
     // store new positions
-    input.cursor_x = xpos;
-    input.cursor_y = ypos;
+    input.cursor_x = x;
+    input.cursor_y = y;
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {

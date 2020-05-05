@@ -18,7 +18,7 @@ struct Texture {
     ~Texture();
 
     void bind(unsigned int slot = 0) const;
-    void unbind() const;
+    static void unbind() ;
 };
 
 

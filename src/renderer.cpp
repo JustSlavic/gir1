@@ -17,3 +17,10 @@ void Renderer::init() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
+
+void Renderer::draw(const VertexArray &vertex_array, Shader &shader) {
+    vertex_array.bind();
+    shader.bind();
+
+    GL_CALL(glDrawArrays(GL_TRIANGLES, 0, 36));
+}

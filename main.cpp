@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <iostream>
 #include <ostream>
+#include <cmath>
 
 // opengl imports
 #include <GL/glew.h> // have to be included before glfw3
@@ -24,21 +25,13 @@
 #include <renderer.h>
 #include <texture.h>
 #include <input.h>
+#include <camera.h>
 #include <version.h>
 
 
 static void glfw_error_callback(int error, const char* description) {
     fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
-
-
-struct Camera {
-    float x;
-    float y;
-    float z;
-
-    Camera(float x, float y, float z) :x(x), y(y), z(z) {}
-};
 
 
 std::ostream& operator<<(std::ostream& os, glm::mat4 m) {
@@ -66,7 +59,7 @@ GLFWwindow* init_window(int width, int height) {
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
     glfwWindowHint(GLFW_SAMPLES, 4); // Enable 4x anti aliasing
 
-    GLFWwindow* window = glfwCreateWindow(width, height, "Hello World", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(width, height, "Gir1", nullptr, nullptr);
     if (!window) {
         fprintf(stderr, "Error: GLFW CreateWindow failed!\n");
         std::exit(ERROR_GLFW_FAILED);
@@ -83,7 +76,7 @@ GLFWwindow* init_window(int width, int height) {
     /* Enable vsync */
     glfwSwapInterval(1);
     /* Disable cursor visibility */
-    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     GLenum err = glewInit();
     if (GLEW_OK != err) {
@@ -134,38 +127,51 @@ int main(int argc, char** argv, char** env) {
         return -1;
     }
 
-    float positions[4*6*2] = {
-    // external coords   texture coords
-        -1.0, -1.0, -1.0,  0.0, 0.0, 0.0, // 0 - bottom left
-         1.0, -1.0, -1.0,  1.0, 0.0, 1.0, // 1 - bottom right
-         1.0,  1.0, -1.0,  0.0, 1.0, 0.0, // 2 - top right
-        -1.0,  1.0, -1.0,  0.0, 0.0, 1.0, // 3 - top left
+    float vertices[] = {
+            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+             0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-        -1.0, -1.0,  1.0,  1.0, 1.0, 0.0, // 4 - far bottom left
-         1.0, -1.0,  1.0,  0.0, 1.0, 1.0, // 5 - far bottom right
-         1.0,  1.0,  1.0,  1.0, 0.0, 0.0, // 6 - far top right
-        -1.0,  1.0,  1.0,  1.0, 1.0, 1.0, // 7 - far top left
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+             0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+             0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+             0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+             0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+             0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+             0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+             0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+             0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+             0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
 
-    GLuint indices[] = {
-        0, 1, 2,
-        2, 3, 0,
 
-        4, 7, 6,
-        6, 5, 4,
-
-        1, 5, 6,
-        6, 2, 1,
-
-        0, 3, 7,
-        7, 4, 0,
-
-        2, 6, 7,
-        7, 3, 2,
-
-        0, 4, 5,
-        5, 1, 0,
-    };
     init_imgui(window);
 
     Renderer::init();
@@ -175,17 +181,17 @@ int main(int argc, char** argv, char** env) {
     fprintf(stdout, "Renderer: %s\n\n", glGetString(GL_RENDERER));
 
     VertexArray vertex_array;
-    VertexBuffer vertex_buffer(positions, 2 * 4 * 6 * sizeof(float));
 
+    VertexBuffer vertex_buffer(vertices, sizeof(vertices));
     VertexBufferLayout layout;
     layout.push<float>(3);
-    layout.push<float>(3);
+    layout.push<float>(2);
 
     vertex_array.add_buffer(vertex_buffer, layout);
 
-    IndexBuffer index_buffer(indices, 3*2*6);
+//    IndexBuffer index_buffer(indices, 3*2*6);
 
-//    Texture texture("resources/textures/wall.png");
+    Texture texture("resources/textures/wall.png");
 
     Shader shader;
     shader.load_shader(Shader::Type::Vertex, "resources/shaders/vertex.vshader")
@@ -193,47 +199,48 @@ int main(int argc, char** argv, char** env) {
           .compile()
           .bind();
 
-//    shader.set_uniform_1i("u_Texture", 0);
-
-    float camera_x = 0.0f;
-    float camera_y = 0.0f;
-    float camera_z = 50.0f;
+    shader.set_uniform_1i("u_Texture", 0);
 
     auto& input = KeyboardState::instance();
 
-    glm::mat4 model_matrix = glm::scale(glm::mat4(1.0f), glm::vec3(10, 10, 10));
-    glm::mat4 projection_matrix = glm::perspective(glm::radians(45.0f), (GLfloat)width/(GLfloat)height, 1.0f,  1000.0f);
+    glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, 1));
+    glm::mat4 projection = glm::perspective(glm::radians(30.0f), (GLfloat)width / (GLfloat)height, 1.0f, 1000.0f);
 
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-    float camera_speed = 5;
-    float rotate_x = 0.0f;
-    float rotate_y = 0.0f;
-    float rotate_z = 0.0f;
 
+    Camera camera;
+
+    double t = glfwGetTime();
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
         /* Render here */
         Renderer::clear();
 
-        if (input.W_pressed) camera_y += camera_speed;
-        if (input.A_pressed) camera_x -= camera_speed;
-        if (input.S_pressed) camera_y -= camera_speed;
-        if (input.D_pressed) camera_x += camera_speed;
+        auto dt = static_cast<float>(glfwGetTime() - t);
+        t = glfwGetTime();
 
-        glm::mat4 view_matrix =
-                glm::rotate(
-                glm::rotate(
-                glm::rotate(
-                glm::translate(glm::mat4(1.0f), glm::vec3(-camera_x, -camera_y, -camera_z)),
-                glm::radians(rotate_x), glm::vec3(1.0, 0.0, 0.0)),
-                glm::radians(rotate_y), glm::vec3(0.0, 1.0, 0.0)),
-                glm::radians(rotate_z), glm::vec3(0.0, 0.0, 1.0));
+        if (input.W_pressed) { camera.translate_forward(dt); }
+        if (input.S_pressed) { camera.translate_backwards(dt); }
+        if (input.A_pressed) { camera.translate_left(dt); }
+        if (input.D_pressed) { camera.translate_right(dt); }
+        if (input.R_pressed) { camera.translate_up(dt); }
+        if (input.F_pressed) { camera.translate_down(dt); }
 
-        glm::mat4 mvp = projection_matrix * view_matrix * model_matrix;
+        if (input.UP_pressed) { camera.rotate_up(dt); }
+        if (input.DOWN_pressed) { camera.rotate_down(dt); }
+        if (input.LEFT_pressed) { camera.rotate_left(dt); }
+        if (input.RIGHT_pressed) { camera.rotate_right(dt); }
+
+        camera.rotate_right((float)input.cursor_dx * 0.5f * dt);
+        camera.rotate_up((float)input.cursor_dy * 0.5f * dt);
+
+        glm::mat4 view = camera.get_view_matrix();
+
+        glm::mat4 mvp = projection * view * model;
 
         shader.set_uniform_mat4f("u_MVP", mvp);
 
-        Renderer::draw(vertex_array, index_buffer, shader);
+        Renderer::draw(vertex_array, shader);
 
         {
             /*  DEAR IM GUI */
@@ -251,12 +258,13 @@ int main(int argc, char** argv, char** env) {
 //                ImGui::Checkbox("Demo Window", &show_demo_window); // Edit bools storing our window open/close state
 //                ImGui::Checkbox("Another Window", &show_another_window);
 
-                ImGui::SliderFloat("camera_x", &camera_x, -0.5f*width, 0.5f*width); // Edit 1 float using a slider from 0.0f to 1.0f
-                ImGui::SliderFloat("camera_y", &camera_y, -0.5f*height, 0.5f*height); // Edit 1 float using a slider from 0.0f to 1.0f
-                ImGui::SliderFloat("camera_z", &camera_z, 1, 1000); // Edit 1 float using a slider from 0.0f to 1.0f
-                ImGui::SliderFloat("rotate_x", &rotate_x, 0, 360); // Edit 1 float using a slider from 0.0f to 1.0f
-                ImGui::SliderFloat("rotate_y", &rotate_y, 0, 360); // Edit 1 float using a slider from 0.0f to 1.0f
-                ImGui::SliderFloat("rotate_z", &rotate_z, 0, 360); // Edit 1 float using a slider from 0.0f to 1.0f
+                ImGui::SliderFloat("player_x", &camera.position.x, -100, 100);
+                ImGui::SliderFloat("player_y", &camera.position.y, -100, 100);
+                ImGui::SliderFloat("player_z", &camera.position.z, -100, 100);
+
+                ImGui::Text("Forward vector: (%5.2lf, %5.2lf, %5.2lf)", camera.direction.x, camera.direction.y, camera.direction.z);
+                ImGui::Text("Pitch: %f", camera.pitch);
+                ImGui::Text("Yaw: %f", camera.yaw);
 
                 ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
@@ -265,19 +273,20 @@ int main(int argc, char** argv, char** env) {
                 ImGui::SameLine();
                 ImGui::Text("counter = %d", counter);
 
-                double cursor_x, cursor_y;
-                glfwGetCursorPos(window, &cursor_x, &cursor_y);
+//                double cursor_x, cursor_y;
+//                glfwGetCursorPos(window, &cursor_x, &cursor_y);
 
-                ImGui::Text("Cursor: (%5.2lf, %5.2lf)", cursor_x, cursor_y);
+                ImGui::Text("Cursor: (%5.2lf, %5.2lf)", input.cursor_x, input.cursor_y);
+                ImGui::Text("Cursor dr: (%5.2lf, %5.2lf)", input.cursor_dx, input.cursor_dy);
                 ImGui::Text("LMB drag: (%5.2lf, %5.2lf)", input.LMB_drag_x, input.LMB_drag_y);
                 ImGui::Text("RMB drag: (%5.2lf, %5.2lf)", input.RMB_drag_x, input.RMB_drag_y);
 
-                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+                ImGui::Text("Application average %.3f ms/frame (%.1f FPS); dt = %.3f", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, dt);
                 ImGui::End();
             }
 
-            input.LMB_drag_x = 0;
-            input.LMB_drag_y = 0;
+            input.cursor_dx = 0;
+            input.cursor_dy = 0;
 
             // Rendering
             ImGui::Render();

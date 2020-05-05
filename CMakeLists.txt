@@ -18,6 +18,7 @@ set(HEADER_FILES
         include/shader.h
         include/texture.h
         include/input.h
+        include/camera.h
         include/utils.h
         include/version.h
         include/vertex_array.h
@@ -30,6 +31,7 @@ set(SOURCE_FILES
         src/shader.cpp
         src/texture.cpp
         src/input.cpp
+        src/camera.cpp
         src/utils.cpp
         src/version.cpp
         src/vertex_array.cpp
