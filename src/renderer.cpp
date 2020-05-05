@@ -24,3 +24,10 @@ void Renderer::draw(const VertexArray &vertex_array, Shader &shader) {
 
     GL_CALL(glDrawArrays(GL_TRIANGLES, 0, 36));
 }
+
+void Renderer::draw(const Cube &cube, Shader &shader) {
+    cube.vertex_array.bind();
+    shader.bind();
+
+    GL_CALL(glDrawArrays(GL_TRIANGLES, 0, 36));
+}

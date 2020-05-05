@@ -55,6 +55,15 @@ void cursor_position_callback(GLFWwindow* window, double x, double y) {
     input.cursor_dx = x - input.cursor_x;
     input.cursor_dy = y - input.cursor_y;
 
+    if (input.LMB_pressed) {
+        input.LMB_drag_x = input.cursor_dx;
+        input.LMB_drag_y = input.cursor_dy;
+    }
+    if (input.RMB_pressed) {
+        input.RMB_drag_x = input.cursor_dx;
+        input.RMB_drag_y = input.cursor_dy;
+    }
+
     // store new positions
     input.cursor_x = x;
     input.cursor_y = y;

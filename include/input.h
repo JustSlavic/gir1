@@ -9,6 +9,7 @@ struct KeyboardState {
 
     double cursor_dx = 0;
     double cursor_dy = 0;
+
     bool LMB_pressed = false;
     bool RMB_pressed = false;
 

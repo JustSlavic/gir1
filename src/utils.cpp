@@ -70,6 +70,7 @@ bool check_gl_errors() {
                    "       An attempt has been made to perform an operation that would cause an internal stack to overflow.\n");
             break;
         case GL_NO_ERROR:  // No error has been recorded. The value of this symbolic constant is guaranteed to be 0.
+        default:
             break;
         }
     }

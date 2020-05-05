@@ -19,6 +19,7 @@ set(HEADER_FILES
         include/texture.h
         include/input.h
         include/camera.h
+        include/model.h
         include/utils.h
         include/version.h
         include/vertex_array.h
@@ -32,6 +33,7 @@ set(SOURCE_FILES
         src/texture.cpp
         src/input.cpp
         src/camera.cpp
+        src/model.cpp
         src/utils.cpp
         src/version.cpp
         src/vertex_array.cpp

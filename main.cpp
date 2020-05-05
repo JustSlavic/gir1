@@ -1,6 +1,5 @@
 // std imports
 #include <cstdio>
-#include <iostream>
 #include <ostream>
 #include <cmath>
 
@@ -76,7 +75,7 @@ GLFWwindow* init_window(int width, int height) {
     /* Enable vsync */
     glfwSwapInterval(1);
     /* Disable cursor visibility */
-     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+//     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     GLenum err = glewInit();
     if (GLEW_OK != err) {
@@ -127,51 +126,6 @@ int main(int argc, char** argv, char** env) {
         return -1;
     }
 
-    float vertices[] = {
-            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-             0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-             0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-             0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-             0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-            -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-             0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-             0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-             0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-             0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-             0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-             0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-    };
-
-
     init_imgui(window);
 
     Renderer::init();
@@ -180,18 +134,15 @@ int main(int argc, char** argv, char** env) {
     fprintf(stdout, "OpenGL v.%s\n", glGetString(GL_VERSION));
     fprintf(stdout, "Renderer: %s\n\n", glGetString(GL_RENDERER));
 
-    VertexArray vertex_array;
-
-    VertexBuffer vertex_buffer(vertices, sizeof(vertices));
-    VertexBufferLayout layout;
-    layout.push<float>(3);
-    layout.push<float>(2);
-
-    vertex_array.add_buffer(vertex_buffer, layout);
-
-//    IndexBuffer index_buffer(indices, 3*2*6);
+    Cube cube_1(glm::vec3(0.0f, 0.0f, 0.0f));
+    Cube cube_2(glm::vec3(2.0f, 2.0f, 0.0f));
+    Cube cube_3(glm::vec3(0.0f, 1.0f, 2.0f));
 
     Texture texture("resources/textures/wall.png");
+    Texture texture_face("resources/textures/awesomeface.png");
+
+    texture.bind(0);
+    texture_face.bind(1);
 
     Shader shader;
     shader.load_shader(Shader::Type::Vertex, "resources/shaders/vertex.vshader")
@@ -199,7 +150,8 @@ int main(int argc, char** argv, char** env) {
           .compile()
           .bind();
 
-    shader.set_uniform_1i("u_Texture", 0);
+    shader.set_uniform_1i("u_Texture_1", 0);
+    shader.set_uniform_1i("u_Texture_2", 1);
 
     auto& input = KeyboardState::instance();
     glfwGetCursorPos(window, &input.cursor_x, &input.cursor_y);
@@ -237,11 +189,20 @@ int main(int argc, char** argv, char** env) {
 
         glm::mat4 view = camera.get_view_matrix();
 
+        model = glm::translate(glm::mat4(0.1f), cube_1.position);
         glm::mat4 mvp = projection * view * model;
-
         shader.set_uniform_mat4f("u_MVP", mvp);
+        Renderer::draw(cube_1, shader);
 
-        Renderer::draw(vertex_array, shader);
+        model = glm::translate(glm::mat4(0.1f), cube_2.position);
+        mvp = projection * view * model;
+        shader.set_uniform_mat4f("u_MVP", mvp);
+        Renderer::draw(cube_2, shader);
+
+        model = glm::translate(glm::mat4(0.1f), cube_3.position);
+        mvp = projection * view * model;
+        shader.set_uniform_mat4f("u_MVP", mvp);
+        Renderer::draw(cube_3, shader);
 
         {
             /*  DEAR IM GUI */
@@ -274,9 +235,6 @@ int main(int argc, char** argv, char** env) {
                 ImGui::SameLine();
                 ImGui::Text("counter = %d", counter);
 
-//                double cursor_x, cursor_y;
-//                glfwGetCursorPos(window, &cursor_x, &cursor_y);
-
                 ImGui::Text("Cursor: (%5.2lf, %5.2lf)", input.cursor_x, input.cursor_y);
                 ImGui::Text("Cursor dr: (%5.2lf, %5.2lf)", input.cursor_dx, input.cursor_dy);
                 ImGui::Text("LMB drag: (%5.2lf, %5.2lf)", input.LMB_drag_x, input.LMB_drag_y);
@@ -288,6 +246,10 @@ int main(int argc, char** argv, char** env) {
 
             input.cursor_dx = 0;
             input.cursor_dy = 0;
+            input.LMB_drag_x = 0;
+            input.LMB_drag_y = 0;
+            input.RMB_drag_x = 0;
+            input.RMB_drag_y = 0;
 
             // Rendering
             ImGui::Render();
