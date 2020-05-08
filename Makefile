@@ -48,6 +48,8 @@ HEADERS=        \
                 shader \
                 texture \
                 model \
+                model_asset \
+                model_instance \
                 camera \
                 input \
                 version \
@@ -64,6 +66,8 @@ SOURCES=        \
                 shader \
                 texture \
                 model \
+                model_asset \
+                model_instance \
                 camera \
                 input \
                 version \

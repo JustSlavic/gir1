@@ -176,7 +176,6 @@ int main(int argc, char** argv, char** env) {
     auto& input = KeyboardState::instance();
     glfwGetCursorPos(window, &input.cursor_x, &input.cursor_y);
 
-    glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, 1));
     glm::mat4 projection = glm::perspective(glm::radians(30.0f), (GLfloat)width / (GLfloat)height, 1.0f, 1000.0f);
 
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
