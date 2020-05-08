@@ -20,6 +20,8 @@ set(HEADER_FILES
         include/input.h
         include/camera.h
         include/model.h
+        include/model_asset.h
+        include/model_instance.h
         include/utils.h
         include/version.h
         include/vertex_array.h
@@ -34,6 +36,8 @@ set(SOURCE_FILES
         src/input.cpp
         src/camera.cpp
         src/model.cpp
+        src/model_asset.cpp
+        src/model_instance.cpp
         src/utils.cpp
         src/version.cpp
         src/vertex_array.cpp

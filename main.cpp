@@ -17,6 +17,8 @@
 #include <imgui/imgui_impl_opengl3.h>
 
 // my imports
+#include <model_asset.h>
+#include <model_instance.h>
 #include <vertex_array.h>
 #include <vertex_buffer.h>
 #include <index_buffer.h>
@@ -134,10 +136,6 @@ int main(int argc, char** argv, char** env) {
     fprintf(stdout, "OpenGL v.%s\n", glGetString(GL_VERSION));
     fprintf(stdout, "Renderer: %s\n\n", glGetString(GL_RENDERER));
 
-    Cube cube_1(glm::vec3(0.0f, 0.0f, 0.0f));
-    Cube cube_2(glm::vec3(2.0f, 2.0f, 0.0f));
-    Cube cube_3(glm::vec3(0.0f, 1.0f, 2.0f));
-
     Texture texture("resources/textures/wall.png");
     Texture texture_face("resources/textures/awesomeface.png");
 
@@ -152,6 +150,28 @@ int main(int argc, char** argv, char** env) {
 
     shader.set_uniform_1i("u_Texture_1", 0);
     shader.set_uniform_1i("u_Texture_2", 1);
+
+    ModelAsset cube_asset = ModelAsset::load_obj("resources/models/cube.model");
+    cube_asset.texture = &texture;
+    cube_asset.shader = &shader;
+
+    std::vector<ModelInstance> models(3);
+
+    models[0].asset = &cube_asset;
+    models[0].transform = glm::translate(
+            glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+    models[1].asset = &cube_asset;
+    models[1].transform =
+            glm::scale(
+            glm::translate(
+            glm::mat4(1.0f), glm::vec3(0.1f, 1.0f, 1.0f)),
+            glm::vec3(2.0f));
+
+    models[2].asset = &cube_asset;
+    models[2].transform =
+            glm::scale(
+                glm::mat4(1.0f), glm::vec3(0.5f));
 
     auto& input = KeyboardState::instance();
     glfwGetCursorPos(window, &input.cursor_x, &input.cursor_y);
@@ -189,20 +209,11 @@ int main(int argc, char** argv, char** env) {
 
         glm::mat4 view = camera.get_view_matrix();
 
-        model = glm::translate(glm::mat4(0.1f), cube_1.position);
-        glm::mat4 mvp = projection * view * model;
-        shader.set_uniform_mat4f("u_MVP", mvp);
-        Renderer::draw(cube_1, shader);
-
-        model = glm::translate(glm::mat4(0.1f), cube_2.position);
-        mvp = projection * view * model;
-        shader.set_uniform_mat4f("u_MVP", mvp);
-        Renderer::draw(cube_2, shader);
-
-        model = glm::translate(glm::mat4(0.1f), cube_3.position);
-        mvp = projection * view * model;
-        shader.set_uniform_mat4f("u_MVP", mvp);
-        Renderer::draw(cube_3, shader);
+        for (auto& cube : models) {
+            glm::mat4 mvp = projection * view * cube.transform;
+            shader.set_uniform_mat4f("u_MVP", mvp);
+            Renderer::draw(cube);
+        }
 
         {
             /*  DEAR IM GUI */

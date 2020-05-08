@@ -1,50 +1,52 @@
 #include <input.h>
 #include <defines.h>
 
-#include <cstdio>
-
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 
-#define HANDLE_KEY(KEY, ACTION, CALL) \
+#define HANDLE_KEY_PRESS(KEY) \
+    if (key == GLFW_KEY_ ## KEY && action == GLFW_PRESS) input. ## KEY ## _pressed = true
+
+#define HANDLE_KEY_FN(KEY, ACTION, CALL) \
     if (key == GLFW_KEY_ ## KEY && action == GLFW_ ## ACTION) CALL
 
 #define PRINT_PRESSED(KEY) printf("Pressed " STRINGIFY(KEY) "\n")
 
     auto& input = KeyboardState::instance();
 
-    HANDLE_KEY(W, PRESS, input.W_pressed = true);
-    HANDLE_KEY(W, RELEASE, input.W_pressed = false);
-    HANDLE_KEY(S, PRESS, input.S_pressed = true);
-    HANDLE_KEY(S, RELEASE, input.S_pressed = false);
-    HANDLE_KEY(A, PRESS, input.A_pressed = true);
-    HANDLE_KEY(A, RELEASE, input.A_pressed = false);
-    HANDLE_KEY(D, PRESS, input.D_pressed = true);
-    HANDLE_KEY(D, RELEASE, input.D_pressed = false);
+    HANDLE_KEY_FN(W, PRESS, input.W_pressed = true);
+    HANDLE_KEY_FN(W, RELEASE, input.W_pressed = false);
+    HANDLE_KEY_FN(S, PRESS, input.S_pressed = true);
+    HANDLE_KEY_FN(S, RELEASE, input.S_pressed = false);
+    HANDLE_KEY_FN(A, PRESS, input.A_pressed = true);
+    HANDLE_KEY_FN(A, RELEASE, input.A_pressed = false);
+    HANDLE_KEY_FN(D, PRESS, input.D_pressed = true);
+    HANDLE_KEY_FN(D, RELEASE, input.D_pressed = false);
 
-    HANDLE_KEY(R, PRESS, input.R_pressed = true);
-    HANDLE_KEY(R, RELEASE, input.R_pressed = false);
-    HANDLE_KEY(F, PRESS, input.F_pressed = true);
-    HANDLE_KEY(F, RELEASE, input.F_pressed = false);
+    HANDLE_KEY_FN(R, PRESS, input.R_pressed = true);
+    HANDLE_KEY_FN(R, RELEASE, input.R_pressed = false);
+    HANDLE_KEY_FN(F, PRESS, input.F_pressed = true);
+    HANDLE_KEY_FN(F, RELEASE, input.F_pressed = false);
 
-    HANDLE_KEY(Z, PRESS, input.Z_pressed = true);
-    HANDLE_KEY(Z, RELEASE, input.Z_pressed = false);
-    HANDLE_KEY(X, PRESS, input.X_pressed = true);
-    HANDLE_KEY(X, RELEASE, input.X_pressed = false);
+    HANDLE_KEY_FN(Z, PRESS, input.Z_pressed = true);
+    HANDLE_KEY_FN(Z, RELEASE, input.Z_pressed = false);
+    HANDLE_KEY_FN(X, PRESS, input.X_pressed = true);
+    HANDLE_KEY_FN(X, RELEASE, input.X_pressed = false);
 
-    HANDLE_KEY(LEFT, PRESS, input.LEFT_pressed = true);
-    HANDLE_KEY(LEFT, RELEASE, input.LEFT_pressed = false);
-    HANDLE_KEY(RIGHT, PRESS, input.RIGHT_pressed = true);
-    HANDLE_KEY(RIGHT, RELEASE, input.RIGHT_pressed = false);
-    HANDLE_KEY(UP, PRESS, input.UP_pressed = true);
-    HANDLE_KEY(UP, RELEASE, input.UP_pressed = false);
-    HANDLE_KEY(DOWN, PRESS, input.DOWN_pressed = true);
-    HANDLE_KEY(DOWN, RELEASE, input.DOWN_pressed = false);
+    HANDLE_KEY_FN(LEFT, PRESS, input.LEFT_pressed = true);
+    HANDLE_KEY_FN(LEFT, RELEASE, input.LEFT_pressed = false);
+    HANDLE_KEY_FN(RIGHT, PRESS, input.RIGHT_pressed = true);
+    HANDLE_KEY_FN(RIGHT, RELEASE, input.RIGHT_pressed = false);
+    HANDLE_KEY_FN(UP, PRESS, input.UP_pressed = true);
+    HANDLE_KEY_FN(UP, RELEASE, input.UP_pressed = false);
+    HANDLE_KEY_FN(DOWN, PRESS, input.DOWN_pressed = true);
+    HANDLE_KEY_FN(DOWN, RELEASE, input.DOWN_pressed = false);
 
-    HANDLE_KEY(ESCAPE, PRESS, std::exit(0));
+    HANDLE_KEY_FN(ESCAPE, PRESS, std::exit(0));
 
-#undef HANDLE_KEY
 #undef PRINT_PRESSED
+#undef HANDLE_KEY_FN
+#undef HANDLE_KEY_PRESS
 
 }
 

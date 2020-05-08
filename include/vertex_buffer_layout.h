@@ -1,11 +1,8 @@
 #ifndef GIR1_VERTEX_BUFFER_LAYOUT_H
 #define GIR1_VERTEX_BUFFER_LAYOUT_H
 
-
 #include <vector>
-
 #include <GL/glew.h>
-
 #include <defines.h>
 
 
