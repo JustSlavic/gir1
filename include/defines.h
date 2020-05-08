@@ -18,6 +18,9 @@
     call; \
     ASSERT(check_gl_errors())
 
+#define GL_CHECK_ERRORS \
+    ASSERT(check_gl_errors())
+
 #define STRINGIFY2(X) #X
 #define STRINGIFY(X) STRINGIFY2(X)
 
