@@ -1,80 +1,89 @@
 # project name
-PROJECT=        gir1
+PROJECT = gir1
 
 # Compiler
-CXX=            g++
+CXX = g++
 
 # C++ standard
-CXX_STANDARD=   c++14
+CXX_STANDARD = c++14
 
 # Include directories
-INC_DIR=        /usr/include \
-                include \
-                libs \
+INC_DIR = \
+	/usr/include \
+	include \
+	libs \
 
 # Library directories
-LIB_DIR=        /usr/lib/
+LIB_DIR = \
+	/usr/lib/
 
 # Prebuild library
-LOCAL_LIBS=     stb \
-                imgui \
+LOCAL_LIBS = \
+	stb \
+	imgui \
 
 # Libraries:
 # GL - OpenGL
 # GLU - OpenGL Utility
 # glfw - Managing window and input
 # GLEW - Loads supported OpenGL functions for us
-LIBS=           GL \
-                GLU \
-                glfw \
-                GLEW \
+LIBS = \
+	GL \
+	GLU \
+	glfw \
+	GLEW \
 
 # Compilation flags
-CXXFLAGS=       -Wall \
-                -std=$(CXX_STANDARD)
+CXXFLAGS = \
+	-Wall \
+	-std=$(CXX_STANDARD)
 
-CXXFLAGS+=      $(addprefix -I, $(INC_DIR))
+CXXFLAGS += $(addprefix -I, $(INC_DIR))
 
-LDFLAGS=        $(addprefix -L, $(LIB_DIR)) \
-                $(addprefix -l, $(LIBS))
-
-
-HEADERS=        \
-                renderer \
-                index_buffer \
-                vertex_array \
-                vertex_buffer \
-                vertex_buffer_layout \
-                shader \
-                texture \
-                model \
-                model_asset \
-                model_instance \
-                camera \
-                input \
-                version \
-                defines \
-                utils \
+LDFLAGS = \
+	$(addprefix -L, $(LIB_DIR)) \
+	$(addprefix -l, $(LIBS))
 
 
-SOURCES=        \
-                renderer \
-                index_buffer \
-                vertex_array \
-                vertex_buffer \
-                vertex_buffer_layout \
-                shader \
-                texture \
-                model \
-                model_asset \
-                model_instance \
-                camera \
-                input \
-                version \
-                utils \
+HEADERS = \
+	renderer \
+	index_buffer \
+	vertex_array \
+	vertex_buffer \
+	vertex_buffer_layout \
+	shader \
+	texture \
+	skybox \
+	model \
+	model_asset \
+	model_instance \
+	camera \
+	input \
+	version \
+	defines \
+	utils \
 
 
-TEST_SOURCES=   test \
+SOURCES = \
+	renderer \
+	index_buffer \
+	vertex_array \
+	vertex_buffer \
+	vertex_buffer_layout \
+	shader \
+	texture \
+	skybox \
+	model \
+	model_asset \
+	model_instance \
+	camera \
+	input \
+	version \
+	utils \
+
+
+TEST_SOURCES = \
+	test \
 
 
 HEADERS      := $(addprefix include/, $(addsuffix .h,   $(HEADERS)))
@@ -92,7 +101,7 @@ CURRENT_DIR  := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 # ================= RULES ================= #
 
 # Unconditional rules
-.PHONY: $(PROJECT) test version prebuild postbuild clean clean_main clean_libs package
+.PHONY: $(PROJECT) debug test version prebuild postbuild clean clean_main clean_libs package
 
 # Silent rules
 .SILENT: prebuild postbuild version install uninstall
@@ -101,11 +110,16 @@ CURRENT_DIR  := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 # Build project and create symlink for easy access and run
 $(PROJECT): prebuild bin/$(PROJECT) postbuild
 
+debug: prebuild bin/$(PROJECT)-debug
+
 # ================== MAIN ================== #
 
 #  Build main executable
 bin/$(PROJECT): main.cpp $(OBJECTS) $(STATIC_LIBS)
-	g++ main.cpp $(OBJECTS) $(STATIC_LIBS) -o bin/$(PROJECT) $(CXXFLAGS) $(LDFLAGS)
+	g++ main.cpp $(OBJECTS) $(STATIC_LIBS) -O2 -o bin/$(PROJECT) $(CXXFLAGS) $(LDFLAGS)
+
+bin/$(PROJECT)-debug: main.cpp $(OBJECTS) $(STATIC_LIBS)
+	g++ main.cpp $(OBJECTS) $(STATIC_LIBS) -g -o bin/$(PROJECT)-debug $(CXXFLAGS) $(LDFLAGS)
 
 # Build all object files
 build/%.o: src/%.cpp include/%.h
