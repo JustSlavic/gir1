@@ -9,15 +9,15 @@ CXX_STANDARD=   c++14
 
 # Include directories
 INC_DIR=        /usr/include \
-				include \
-				libs \
+                include \
+                libs \
 
 # Library directories
 LIB_DIR=        /usr/lib/
 
 # Prebuild library
 LOCAL_LIBS=     stb \
-				imgui \
+                imgui \
 
 # Libraries:
 # GL - OpenGL
@@ -25,49 +25,49 @@ LOCAL_LIBS=     stb \
 # glfw - Managing window and input
 # GLEW - Loads supported OpenGL functions for us
 LIBS=           GL \
-				GLU \
-				glfw \
-				GLEW \
+                GLU \
+                glfw \
+                GLEW \
 
 # Compilation flags
 CXXFLAGS=       -Wall \
-				-std=$(CXX_STANDARD)
+                -std=$(CXX_STANDARD)
 
 CXXFLAGS+=      $(addprefix -I, $(INC_DIR))
 
 LDFLAGS=        $(addprefix -L, $(LIB_DIR)) \
-				$(addprefix -l, $(LIBS))
+                $(addprefix -l, $(LIBS))
 
 
 HEADERS=        \
-				renderer \
-				index_buffer \
-				vertex_array \
-				vertex_buffer \
-				vertex_buffer_layout \
-				shader \
-				texture \
-				model \
-				camera \
-				input \
-				version \
-				defines \
-				utils \
+                renderer \
+                index_buffer \
+                vertex_array \
+                vertex_buffer \
+                vertex_buffer_layout \
+                shader \
+                texture \
+                model \
+                camera \
+                input \
+                version \
+                defines \
+                utils \
 
 
 SOURCES=        \
-				renderer \
-				index_buffer \
-				vertex_array \
-				vertex_buffer \
-				vertex_buffer_layout \
-				shader \
-				texture \
-				model \
-				camera \
-				input \
-				version \
-				utils \
+                renderer \
+                index_buffer \
+                vertex_array \
+                vertex_buffer \
+                vertex_buffer_layout \
+                shader \
+                texture \
+                model \
+                camera \
+                input \
+                version \
+                utils \
 
 
 TEST_SOURCES=   test \
@@ -96,7 +96,6 @@ CURRENT_DIR  := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 # Build project and create symlink for easy access and run
 $(PROJECT): prebuild bin/$(PROJECT) postbuild
-	ln -sfn bin/$(PROJECT) run
 
 # ================== MAIN ================== #
 
@@ -105,7 +104,7 @@ bin/$(PROJECT): main.cpp $(OBJECTS) $(STATIC_LIBS)
 	g++ main.cpp $(OBJECTS) $(STATIC_LIBS) -o bin/$(PROJECT) $(CXXFLAGS) $(LDFLAGS)
 
 # Build all object files
-build/%.o: src/%.cpp $(HEADERS)
+build/%.o: src/%.cpp include/%.h
 	@mkdir -p $(dir $@)
 	g++ $< -c -o $@ $(CXXFLAGS)
 
@@ -140,15 +139,18 @@ test: bin/test
 # Prebuild step
 prebuild: version
 	mkdir -p bin
-	chmod a+x version.sh
 
 
 # Postbuild step
-postbuild: ;
+postbuild:
+	ln -sfn bin/$(PROJECT) run
 
 
 # Run script to generate version file
-version:
+version: src/version.cpp .git/HEAD
+	@chmod a+x version.sh
+
+src/version.cpp:
 	./version.sh
 
 
