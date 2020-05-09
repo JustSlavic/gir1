@@ -143,13 +143,12 @@ int main(int argc, char** argv, char** env) {
     texture_face.bind(1);
 
     Shader shader;
-    shader.load_shader(Shader::Type::Vertex, "resources/shaders/vertex.vshader")
-          .load_shader(Shader::Type::Fragment, "resources/shaders/fragment.fshader")
+    shader.load_shader(Shader::Type::Vertex, "resources/shaders/texture_2d.vshader")
+          .load_shader(Shader::Type::Fragment, "resources/shaders/texture_2d.fshader")
           .compile()
           .bind();
 
     shader.set_uniform_1i("u_Texture_1", 0);
-    shader.set_uniform_1i("u_Texture_2", 1);
 
     ModelAsset cube_asset = ModelAsset::load_obj("resources/models/cube.model");
     cube_asset.texture = &texture;
@@ -234,9 +233,9 @@ int main(int argc, char** argv, char** env) {
                 ImGui::SliderFloat("player_y", &camera.position.y, -100, 100);
                 ImGui::SliderFloat("player_z", &camera.position.z, -100, 100);
 
-                ImGui::Text("Forward vector: (%5.2lf, %5.2lf, %5.2lf)", camera.direction.x, camera.direction.y, camera.direction.z);
-                ImGui::Text("Pitch: %f", camera.pitch);
-                ImGui::Text("Yaw: %f", camera.yaw);
+                ImGui::Text("Forward vector: (%6.4lf, %6.4lf, %6.4lf)", camera.direction.x, camera.direction.y, camera.direction.z);
+                ImGui::Text("|forw v| = %f", std::sqrt(camera.direction.x * camera.direction.x +
+                    camera.direction.y * camera.direction.y + camera.direction.z * camera.direction.z));
 
                 ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 

@@ -73,13 +73,13 @@ Shader &Shader::compile() {
         printf("shader is compiled successfully\n");
     }
 
-    GL_CALL(glLinkProgram(id));
-    GL_CALL(glValidateProgram(id));
+    glLinkProgram(id); GL_CHECK_ERRORS;
+    glValidateProgram(id); GL_CHECK_ERRORS;
 
     printf("Shaders linked successfully\n");
 
     for (auto& shader_id : shader_ids) {
-        GL_CALL(glDeleteShader(shader_id));
+        glDeleteShader(shader_id); GL_CHECK_ERRORS;
     }
 
     return *this;
@@ -87,13 +87,13 @@ Shader &Shader::compile() {
 
 
 Shader& Shader::bind() {
-    GL_CALL(glUseProgram(id));
+    glUseProgram(id); GL_CHECK_ERRORS;
     return *this;
 }
 
 
 Shader& Shader::unbind() {
-    GL_CALL(glUseProgram(0));
+    glUseProgram(0); GL_CHECK_ERRORS;
     return *this;
 }
 
@@ -101,7 +101,7 @@ Shader::Uniform Shader::get_uniform(const char *name) {
     auto found = uniform_cache.find(name);
     if (found != uniform_cache.end()) return {found->second};
 
-    GLint location = glGetUniformLocation(id, name);
+    GLint location = glGetUniformLocation(id, name); GL_CHECK_ERRORS;
     ASSERT(location != -1);
 
     uniform_cache.emplace(std::string(name), Uniform(location));
@@ -109,7 +109,7 @@ Shader::Uniform Shader::get_uniform(const char *name) {
 }
 
 Shader &Shader::set_uniform_4f(Shader::Uniform uniform, float x1, float x2, float x3, float x4) {
-    GL_CALL(glUniform4f(uniform.location, x1, x2, x3, x4));
+    glUniform4f(uniform.location, x1, x2, x3, x4); GL_CHECK_ERRORS;
     return *this;
 }
 
