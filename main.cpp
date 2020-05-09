@@ -173,9 +173,16 @@ int main(int argc, char** argv, char** env) {
     cube_asset.texture = &texture;
     cube_asset.shader = &shader;
 
-    std::vector<ModelInstance> models(1);
+    std::vector<ModelInstance> models(2);
     models[0].asset = &cube_asset;
     models[0].transform = glm::mat4(1.0f);
+
+    models[1].asset = &cube_asset;
+    models[1].transform =
+        glm::scale(
+        glm::translate(
+        glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 3.0f)),
+        glm::vec3(2.0f));
 
 
     auto& input = KeyboardState::instance();
