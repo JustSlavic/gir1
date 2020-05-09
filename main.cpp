@@ -31,6 +31,7 @@
 #include <version.h>
 
 #define CAPTURE_CURSOR 0
+#define LOAD_SKYBOX 0
 
 
 static void glfw_error_callback(int error, const char* description) {
@@ -145,6 +146,7 @@ int main(int argc, char** argv, char** env) {
     fprintf(stdout, "OpenGL v.%s\n", glGetString(GL_VERSION));
     fprintf(stdout, "Renderer: %s\n\n", glGetString(GL_RENDERER));
 
+#if LOAD_SKYBOX
     /* Setting skybox */
     Shader skybox_shader;
     skybox_shader.load_shader(Shader::Type::Vertex, "resources/shaders/skybox.vshader")
@@ -157,6 +159,7 @@ int main(int argc, char** argv, char** env) {
     Skybox skybox("resources/textures/skybox_8");
     skybox.shader = &skybox_shader;
     skybox.transform = glm::scale(glm::mat4(1.0f), glm::vec3(500.0f));
+#endif
 
     glm::vec3 light_color{0.8f, 0.9f, 1.0f};
 
@@ -213,7 +216,9 @@ int main(int argc, char** argv, char** env) {
 
     glm::mat4 projection = glm::perspective(glm::radians(30.0f), (GLfloat)width / (GLfloat)height, 1.0f, 1000.0f);
     shader.set_uniform_mat4f("u_projection", projection);
+#if LOAD_SKYBOX
     skybox_shader.set_uniform_mat4f("u_projection", projection);
+#endif
     light_source_shader.set_uniform_mat4f("u_projection", projection);
 
     /* Loop until the user closes the window */
@@ -246,11 +251,13 @@ int main(int argc, char** argv, char** env) {
 
         glm::mat4 view = camera.get_view_matrix();
 
+#if LOAD_SKYBOX
         if (skybox_active) {
             skybox_shader.set_uniform_mat4f("u_model", skybox.transform);
             skybox_shader.set_uniform_mat4f("u_view", view);
             Renderer::draw(skybox);
         }
+#endif
 
         {
             light_source_shader.set_uniform_mat4f("u_model", light_source.transform);
