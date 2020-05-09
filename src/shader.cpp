@@ -28,6 +28,15 @@ GLuint shader_type_to_gl_enum(Shader::Type type) {
     return 0;
 }
 
+const char *shader_type_to_c_str(Shader::Type type) {
+    switch (type) {
+        case Shader::Type::Vertex: return "Vertex";
+        case Shader::Type::Fragment: return "Fragment";
+    }
+
+    return "";
+}
+
 
 GLuint compile_shader(GLuint type, const char* source) {
     GL_CALL(GLuint id = glCreateShader(type));
@@ -62,15 +71,10 @@ Shader &Shader::compile() {
 
     for (auto& pair : sources) {
         GLuint shader_id = compile_shader(shader_type_to_gl_enum(pair.first), pair.second.c_str());
-        GL_CALL(glAttachShader(id, shader_id));
+        glAttachShader(id, shader_id); GL_CHECK_ERRORS;
         shader_ids.push_back(shader_id);
 
-        if (pair.first == Type::Vertex) {
-            printf("Vertex ");
-        } else if (pair.first == Type::Fragment) {
-            printf("Fragment ");
-        }
-        printf("shader is compiled successfully\n");
+        printf("%s shader is compiled successfully\n", shader_type_to_c_str(pair.first));
     }
 
     glLinkProgram(id); GL_CHECK_ERRORS;
@@ -101,7 +105,7 @@ Shader::Uniform Shader::get_uniform(const char *name) {
     if (found != uniform_cache.end()) return {found->second};
 
     GLint location = glGetUniformLocation(id, name); GL_CHECK_ERRORS;
-    ASSERT(location != -1);
+//    ASSERT(location != -1);
 
     uniform_cache.emplace(std::string(name), Uniform(location));
     return {location};
@@ -140,6 +144,30 @@ Shader &Shader::set_uniform_1i(Shader::Uniform uniform, int x) {
 Shader &Shader::set_uniform_1i(const char *name, int x) {
     Uniform uniform = get_uniform(name);
     set_uniform_1i(uniform, x);
+    return *this;
+}
+
+Shader &Shader::set_uniform_3f(Shader::Uniform uniform, float x1, float x2, float x3) {
+    this->bind();
+    glUniform3f(uniform.location, x1, x2, x3); GL_CHECK_ERRORS;
+    return *this;
+}
+
+Shader &Shader::set_uniform_3f(const char *name, float x1, float x2, float x3) {
+    Uniform uniform = get_uniform(name);
+    set_uniform_3f(uniform, x1, x2, x3);
+    return *this;
+}
+
+Shader &Shader::set_uniform_vec3f(Shader::Uniform uniform, const glm::vec3 &vector) {
+    this->bind();
+    glUniform3fv(uniform.location, 1, &vector.x);
+    return *this;
+}
+
+Shader &Shader::set_uniform_vec3f(const char *name, const glm::vec3 &vector) {
+    Uniform uniform = get_uniform(name);
+    set_uniform_vec3f(uniform, vector);
     return *this;
 }
 

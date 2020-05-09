@@ -168,6 +168,14 @@ int main(int argc, char** argv, char** env) {
           .bind();
 
     shader.set_uniform_1i("u_Texture_1", 0);
+    shader.set_uniform_3f("u_light_color", 1.0f, 0.5f, 0.33f);
+
+    Shader light_source_shader;
+    light_source_shader.load_shader(Shader::Type::Vertex, "resources/shaders/light_source.vshader");
+    light_source_shader.load_shader(Shader::Type::Fragment, "resources/shaders/light_source.fshader");
+    light_source_shader.compile().bind();
+
+    light_source_shader.set_uniform_3f("u_light_color", 1.0f, 0.5f, 0.33f);
 
     ModelAsset cube_asset = ModelAsset::load_my_model("resources/models/cube.model");
     cube_asset.texture = &texture;
@@ -184,15 +192,30 @@ int main(int argc, char** argv, char** env) {
         glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 3.0f)),
         glm::vec3(2.0f));
 
+    ModelAsset light_source_asset = ModelAsset::load_my_model("resources/models/cube.model");
+    light_source_asset.shader = &light_source_shader;
+
+    ModelInstance light_source;
+    light_source.asset = &light_source_asset;
+    light_source.transform =
+        glm::scale(
+        glm::translate(
+            glm::mat4(1.0f), glm::vec3(-2.0f, 2.0f, 3.0f)),
+            glm::vec3(0.2));
+
 
     auto& input = KeyboardState::instance();
     glfwGetCursorPos(window, &input.cursor_x, &input.cursor_y);
 
     Camera camera;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-    glm::mat4 projection = glm::perspective(glm::radians(30.0f), (GLfloat)width / (GLfloat)height, 1.0f, 1000.0f);
     double t = glfwGetTime();
-    bool skybox_active = true;
+    bool skybox_active = false;
+
+    glm::mat4 projection = glm::perspective(glm::radians(30.0f), (GLfloat)width / (GLfloat)height, 1.0f, 1000.0f);
+    shader.set_uniform_mat4f("u_projection", projection);
+    skybox_shader.set_uniform_mat4f("u_projection", projection);
+    light_source_shader.set_uniform_mat4f("u_projection", projection);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
@@ -225,17 +248,27 @@ int main(int argc, char** argv, char** env) {
         glm::mat4 view = camera.get_view_matrix();
 
         if (skybox_active) {
-            glm::mat4 mvp = projection * view * skybox.transform;
-            skybox_shader.bind();
-            skybox_shader.set_uniform_mat4f("u_MVP", mvp);
+            skybox_shader.set_uniform_mat4f("u_model", skybox.transform);
+            skybox_shader.set_uniform_mat4f("u_view", view);
             Renderer::draw(skybox);
         }
 
-        for (auto& cube : models) {
-            glm::mat4 mvp = projection * view * cube.transform;
-            shader.bind();
-            shader.set_uniform_mat4f("u_MVP", mvp);
-            Renderer::draw(cube);
+        {
+            light_source_shader.set_uniform_mat4f("u_model", light_source.transform);
+            light_source_shader.set_uniform_mat4f("u_view", view);
+            Renderer::draw(light_source);
+        }
+
+        for (auto& model : models) {
+            glm::mat4 mvp = projection * view * model.transform;
+
+            model.asset->shader->set_uniform_mat4f("u_model", model.transform);
+            model.asset->shader->set_uniform_mat4f("u_view", view);
+            model.asset->shader->set_uniform_mat4f("u_normal_matrix", glm::transpose(glm::inverse(model.transform)));
+
+            model.asset->shader->set_uniform_vec3f("u_light_position", light_source.transform[3]);
+            model.asset->shader->set_uniform_vec3f("u_view_position", camera.position);
+            Renderer::draw(model);
         }
 
         {
@@ -250,7 +283,9 @@ int main(int argc, char** argv, char** env) {
                 static int counter = 0;
 
                 ImGui::Begin("Girl debug view"); // Create a window called "Hello, world!" and append into it.
-                ImGui::Text("Camera positions:"); // Display some text (you can use a format strings too)
+                ImGui::SliderFloat("Light x:", &light_source.transform[3].x, -5, 5);
+                ImGui::SliderFloat("Light y:", &light_source.transform[3].y, -5, 5);
+                ImGui::SliderFloat("Light z:", &light_source.transform[3].z, -5, 5);
 //                ImGui::Checkbox("Demo Window", &show_demo_window); // Edit bools storing our window open/close state
 //                ImGui::Checkbox("Another Window", &show_another_window);
 
