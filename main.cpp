@@ -158,6 +158,8 @@ int main(int argc, char** argv, char** env) {
     skybox.shader = &skybox_shader;
     skybox.transform = glm::scale(glm::mat4(1.0f), glm::vec3(500.0f));
 
+    glm::vec3 light_color{0.8f, 0.9f, 1.0f};
+
     /* Setting cubes */
     Texture texture("resources/textures/wall.png");
 
@@ -168,14 +170,11 @@ int main(int argc, char** argv, char** env) {
           .bind();
 
     shader.set_uniform_1i("u_Texture_1", 0);
-    shader.set_uniform_3f("u_light_color", 1.0f, 0.5f, 0.33f);
 
     Shader light_source_shader;
     light_source_shader.load_shader(Shader::Type::Vertex, "resources/shaders/light_source.vshader");
     light_source_shader.load_shader(Shader::Type::Fragment, "resources/shaders/light_source.fshader");
     light_source_shader.compile().bind();
-
-    light_source_shader.set_uniform_3f("u_light_color", 1.0f, 0.5f, 0.33f);
 
     ModelAsset cube_asset = ModelAsset::load_my_model("resources/models/cube.model");
     cube_asset.texture = &texture;
@@ -256,6 +255,7 @@ int main(int argc, char** argv, char** env) {
         {
             light_source_shader.set_uniform_mat4f("u_model", light_source.transform);
             light_source_shader.set_uniform_mat4f("u_view", view);
+            light_source_shader.set_uniform_vec3f("u_light_color", light_color);
             Renderer::draw(light_source);
         }
 
@@ -267,6 +267,7 @@ int main(int argc, char** argv, char** env) {
             model.asset->shader->set_uniform_mat4f("u_normal_matrix", glm::transpose(glm::inverse(model.transform)));
 
             model.asset->shader->set_uniform_vec3f("u_light_position", light_source.transform[3]);
+            model.asset->shader->set_uniform_vec3f("u_light_color", light_color);
             model.asset->shader->set_uniform_vec3f("u_view_position", camera.position);
             Renderer::draw(model);
         }
@@ -289,7 +290,7 @@ int main(int argc, char** argv, char** env) {
 //                ImGui::Checkbox("Demo Window", &show_demo_window); // Edit bools storing our window open/close state
 //                ImGui::Checkbox("Another Window", &show_another_window);
 
-                ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+                ImGui::ColorEdit3("Light color", &light_color.x); // Edit 3 floats representing a color
 
                 // Buttons return true when clicked (most widgets return true when edited/activated)
                 if (ImGui::Button("Button")) { counter++; }
