@@ -22,7 +22,8 @@ void main() {
 
     float specular_strength = 0.5;
     int shininess = 64;
-    vec3 view_direction = normalize(u_view_position - v_fragment_position);
+    // vec3 view_direction = normalize(u_view_position - v_fragment_position);
+    vec3 view_direction = normalize(-v_fragment_position); // viewer position is 0,0,0 because we are in view space now
     vec3 reflected_direction = reflect(-light_direction, normal);
     float specular = pow(max(dot(view_direction, reflected_direction), 0.0), shininess);
     vec3 specular_light = specular_strength * specular * u_light_color;

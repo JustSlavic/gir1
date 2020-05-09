@@ -271,9 +271,10 @@ int main(int argc, char** argv, char** env) {
 
             model.asset->shader->set_uniform_mat4f("u_model", model.transform);
             model.asset->shader->set_uniform_mat4f("u_view", view);
-            model.asset->shader->set_uniform_mat4f("u_normal_matrix", glm::transpose(glm::inverse(model.transform)));
-
-            model.asset->shader->set_uniform_vec3f("u_light_position", light_source.transform[3]);
+            // moved normal matrix into view space
+            model.asset->shader->set_uniform_mat4f("u_normal_matrix", glm::transpose(glm::inverse(view * model.transform)));
+            // light source position is also moved into view space
+            model.asset->shader->set_uniform_vec3f("u_light_position", view * light_source.transform[3]);
             model.asset->shader->set_uniform_vec3f("u_light_color", light_color);
             model.asset->shader->set_uniform_vec3f("u_view_position", camera.position);
             Renderer::draw(model);

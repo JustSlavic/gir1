@@ -16,6 +16,8 @@ uniform mat4 u_normal_matrix;
 void main() {
     gl_Position = u_projection * u_view * u_model * position;
     v_texture_coordinates = texture_coordinates;
-    v_fragment_position = vec3(u_model * position);
+
+    // fragment position in view space
+    v_fragment_position = vec3(u_view * u_model * position);
     v_normal = mat3(u_normal_matrix) * normal;
 }
