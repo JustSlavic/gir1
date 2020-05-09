@@ -35,7 +35,7 @@ void Renderer::draw(const Cube &cube, Shader &shader) {
 void Renderer::draw(const ModelInstance &model) {
     model.asset->vertex_array->bind();
     model.asset->shader->bind();
-    model.asset->texture->bind();
+    if (model.asset->texture) model.asset->texture->bind();
 
     glDrawArrays(GL_TRIANGLES, 0, 36);
     GL_CHECK_ERRORS;

@@ -21,7 +21,7 @@ void main() {
     vec3 diffuse_light = diffuse * u_light_color;
 
     float specular_strength = 0.5;
-    int shininess = 256;
+    int shininess = 64;
     vec3 view_direction = normalize(u_view_position - v_fragment_position);
     vec3 reflected_direction = reflect(-light_direction, normal);
     float specular = pow(max(dot(view_direction, reflected_direction), 0.0), shininess);
