@@ -33,7 +33,10 @@ struct KeyboardState {
     bool LEFT_pressed = false;
     bool RIGHT_pressed = false;
 
+    bool F3_pressed = false;
+
     static KeyboardState& instance();
+
 private:
     KeyboardState() = default;
 };

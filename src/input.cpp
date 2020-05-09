@@ -42,6 +42,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     HANDLE_KEY_FN(DOWN, PRESS, input.DOWN_pressed = true);
     HANDLE_KEY_FN(DOWN, RELEASE, input.DOWN_pressed = false);
 
+    HANDLE_KEY_FN(F3, PRESS, input.F3_pressed = true);
+    HANDLE_KEY_FN(F3, RELEASE, input.F3_pressed = false);
+
     HANDLE_KEY_FN(ESCAPE, PRESS, std::exit(0));
 
 #undef PRINT_PRESSED

@@ -68,12 +68,12 @@ Skybox::Skybox(const char *dir_path) {
     stbi_set_flip_vertically_on_load(false);
 
     const char *face_names[] = {
-            "xpos.jpg",
-            "xneg.jpg",
-            "ypos.jpg",
-            "yneg.jpg",
-            "zpos.jpg",
-            "zneg.jpg",
+            "posx.jpg",
+            "negx.jpg",
+            "posy.jpg",
+            "negy.jpg",
+            "posz.jpg",
+            "negz.jpg",
     };
 
     for (int i = 0; i < 6; ++i) {

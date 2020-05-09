@@ -154,7 +154,7 @@ int main(int argc, char** argv, char** env) {
 
     skybox_shader.set_uniform_1i("u_Texture_skybox", 0);
 
-    Skybox skybox("resources/textures/skybox_5");
+    Skybox skybox("resources/textures/skybox_8");
     skybox.shader = &skybox_shader;
     skybox.transform = glm::scale(glm::mat4(1.0f), glm::vec3(500.0f));
 
@@ -192,6 +192,7 @@ int main(int argc, char** argv, char** env) {
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     glm::mat4 projection = glm::perspective(glm::radians(30.0f), (GLfloat)width / (GLfloat)height, 1.0f, 1000.0f);
     double t = glfwGetTime();
+    bool skybox_active = false;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
@@ -213,6 +214,8 @@ int main(int argc, char** argv, char** env) {
         if (input.LEFT_pressed) { camera.rotate_left(dt); }
         if (input.RIGHT_pressed) { camera.rotate_right(dt); }
 
+        if (input.F3_pressed) { skybox_active = !skybox_active; input.F3_pressed = false; }
+
 #if CAPTURE_CURSOR
         // Mouse input
         camera.rotate_right((float) input.cursor_dx * 0.5f * dt);
@@ -221,7 +224,7 @@ int main(int argc, char** argv, char** env) {
 
         glm::mat4 view = camera.get_view_matrix();
 
-        {
+        if (skybox_active) {
             glm::mat4 mvp = projection * view * skybox.transform;
             skybox_shader.bind();
             skybox_shader.set_uniform_mat4f("u_MVP", mvp);
