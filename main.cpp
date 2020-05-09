@@ -192,7 +192,7 @@ int main(int argc, char** argv, char** env) {
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     glm::mat4 projection = glm::perspective(glm::radians(30.0f), (GLfloat)width / (GLfloat)height, 1.0f, 1000.0f);
     double t = glfwGetTime();
-    bool skybox_active = false;
+    bool skybox_active = true;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
