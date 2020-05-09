@@ -167,7 +167,6 @@ GIT_REF := $(addprefix .git/, $(subst ref: ,, $(shell cat .git/HEAD)))
 
 # Run script to generate version file
 version: src/version.cpp
-	@echo $(GIT_REF)
 	@chmod a+x version.sh
 
 src/version.cpp: $(GIT_REF)
