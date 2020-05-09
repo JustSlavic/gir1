@@ -37,5 +37,15 @@ void Renderer::draw(const ModelInstance &model) {
     model.asset->shader->bind();
     model.asset->texture->bind();
 
-    GL_CALL(glDrawArrays(GL_TRIANGLES, 0, 36));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    GL_CHECK_ERRORS;
+}
+
+void Renderer::draw(const Skybox &skybox) {
+    glDepthFunc(GL_LEQUAL);
+    skybox.bind();
+    skybox.shader->bind();
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDepthFunc(GL_LESS); // set depth function back to default
+    GL_CHECK_ERRORS;
 }

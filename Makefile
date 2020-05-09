@@ -119,7 +119,7 @@ bin/$(PROJECT): main.cpp $(OBJECTS) $(STATIC_LIBS)
 	g++ main.cpp $(OBJECTS) $(STATIC_LIBS) -O2 -o bin/$(PROJECT) $(CXXFLAGS) $(LDFLAGS)
 
 bin/$(PROJECT)-debug: main.cpp $(OBJECTS) $(STATIC_LIBS)
-	g++ main.cpp $(OBJECTS) $(STATIC_LIBS) -g -o bin/$(PROJECT)-debug $(CXXFLAGS) $(LDFLAGS)
+	g++ main.cpp $(OBJECTS) $(STATIC_LIBS) -g3 -o bin/$(PROJECT)-debug $(CXXFLAGS) $(LDFLAGS)
 
 # Build all object files
 build/%.o: src/%.cpp include/%.h

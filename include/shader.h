@@ -41,7 +41,7 @@ struct Shader {
     Shader& set_uniform_mat4f(const char *name, const glm::mat4& matrix);
 
     Shader& bind();
-    Shader& unbind();
+    static void unbind();
 };
 
 

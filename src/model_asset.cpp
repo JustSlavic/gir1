@@ -2,7 +2,7 @@
 #include <fstream>
 
 
-ModelAsset ModelAsset::load_obj(const char *filename) {
+ModelAsset ModelAsset::load_my_model(const char *filename) {
     ModelAsset asset;
 
     std::ifstream input(filename);

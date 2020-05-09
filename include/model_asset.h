@@ -16,7 +16,7 @@ struct ModelAsset {
     VertexBuffer *vertex_buffer{nullptr};
     VertexBufferLayout *vertex_buffer_layout{nullptr};
 
-    static ModelAsset load_obj(const char *filename);
+    static ModelAsset load_my_model(const char *filename);
 };
 
 

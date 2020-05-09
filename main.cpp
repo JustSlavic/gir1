@@ -25,9 +25,12 @@
 #include <shader.h>
 #include <renderer.h>
 #include <texture.h>
+#include <skybox.h>
 #include <input.h>
 #include <camera.h>
 #include <version.h>
+
+#define CAPTURE_CURSOR 0
 
 
 static void glfw_error_callback(int error, const char* description) {
@@ -57,6 +60,10 @@ GLFWwindow* init_window(int width, int height) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
     glfwWindowHint(GLFW_SAMPLES, 4); // Enable 4x anti aliasing
 
@@ -76,8 +83,10 @@ GLFWwindow* init_window(int width, int height) {
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     /* Enable vsync */
     glfwSwapInterval(1);
+#if CAPTURE_CURSOR
     /* Disable cursor visibility */
-//     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+#endif
 
     GLenum err = glewInit();
     if (GLEW_OK != err) {
@@ -136,11 +145,21 @@ int main(int argc, char** argv, char** env) {
     fprintf(stdout, "OpenGL v.%s\n", glGetString(GL_VERSION));
     fprintf(stdout, "Renderer: %s\n\n", glGetString(GL_RENDERER));
 
-    Texture texture("resources/textures/wall.png");
-    Texture texture_face("resources/textures/awesomeface.png");
+    /* Setting skybox */
+    Shader skybox_shader;
+    skybox_shader.load_shader(Shader::Type::Vertex, "resources/shaders/skybox.vshader")
+            .load_shader(Shader::Type::Fragment, "resources/shaders/skybox.fshader")
+            .compile()
+            .bind();
 
-    texture.bind(0);
-    texture_face.bind(1);
+    skybox_shader.set_uniform_1i("u_Texture_skybox", 0);
+
+    Skybox skybox("resources/textures/skybox_5");
+    skybox.shader = &skybox_shader;
+    skybox.transform = glm::scale(glm::mat4(1.0f), glm::vec3(500.0f));
+
+    /* Setting cubes */
+    Texture texture("resources/textures/wall.png");
 
     Shader shader;
     shader.load_shader(Shader::Type::Vertex, "resources/shaders/texture_2d.vshader")
@@ -150,38 +169,23 @@ int main(int argc, char** argv, char** env) {
 
     shader.set_uniform_1i("u_Texture_1", 0);
 
-    ModelAsset cube_asset = ModelAsset::load_obj("resources/models/cube.model");
+    ModelAsset cube_asset = ModelAsset::load_my_model("resources/models/cube.model");
     cube_asset.texture = &texture;
     cube_asset.shader = &shader;
 
-    std::vector<ModelInstance> models(3);
-
+    std::vector<ModelInstance> models(1);
     models[0].asset = &cube_asset;
-    models[0].transform = glm::translate(
-            glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    models[0].transform = glm::mat4(1.0f);
 
-    models[1].asset = &cube_asset;
-    models[1].transform =
-            glm::scale(
-            glm::translate(
-            glm::mat4(1.0f), glm::vec3(0.1f, 1.0f, 1.0f)),
-            glm::vec3(2.0f));
-
-    models[2].asset = &cube_asset;
-    models[2].transform =
-            glm::scale(
-                glm::mat4(1.0f), glm::vec3(0.5f));
 
     auto& input = KeyboardState::instance();
     glfwGetCursorPos(window, &input.cursor_x, &input.cursor_y);
 
-    glm::mat4 projection = glm::perspective(glm::radians(30.0f), (GLfloat)width / (GLfloat)height, 1.0f, 1000.0f);
-
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
     Camera camera;
-
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    glm::mat4 projection = glm::perspective(glm::radians(30.0f), (GLfloat)width / (GLfloat)height, 1.0f, 1000.0f);
     double t = glfwGetTime();
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
         /* Render here */
@@ -202,13 +206,24 @@ int main(int argc, char** argv, char** env) {
         if (input.LEFT_pressed) { camera.rotate_left(dt); }
         if (input.RIGHT_pressed) { camera.rotate_right(dt); }
 
-        camera.rotate_right((float)input.cursor_dx * 0.5f * dt);
-        camera.rotate_up((float)input.cursor_dy * 0.5f * dt);
+#if CAPTURE_CURSOR
+        // Mouse input
+        camera.rotate_right((float) input.cursor_dx * 0.5f * dt);
+        camera.rotate_up((float) input.cursor_dy * 0.5f * dt);
+#endif
 
         glm::mat4 view = camera.get_view_matrix();
 
+        {
+            glm::mat4 mvp = projection * view * skybox.transform;
+            skybox_shader.bind();
+            skybox_shader.set_uniform_mat4f("u_MVP", mvp);
+            Renderer::draw(skybox);
+        }
+
         for (auto& cube : models) {
             glm::mat4 mvp = projection * view * cube.transform;
+            shader.bind();
             shader.set_uniform_mat4f("u_MVP", mvp);
             Renderer::draw(cube);
         }
@@ -228,14 +243,6 @@ int main(int argc, char** argv, char** env) {
                 ImGui::Text("Camera positions:"); // Display some text (you can use a format strings too)
 //                ImGui::Checkbox("Demo Window", &show_demo_window); // Edit bools storing our window open/close state
 //                ImGui::Checkbox("Another Window", &show_another_window);
-
-                ImGui::SliderFloat("player_x", &camera.position.x, -100, 100);
-                ImGui::SliderFloat("player_y", &camera.position.y, -100, 100);
-                ImGui::SliderFloat("player_z", &camera.position.z, -100, 100);
-
-                ImGui::Text("Forward vector: (%6.4lf, %6.4lf, %6.4lf)", camera.direction.x, camera.direction.y, camera.direction.z);
-                ImGui::Text("|forw v| = %f", std::sqrt(camera.direction.x * camera.direction.x +
-                    camera.direction.y * camera.direction.y + camera.direction.z * camera.direction.z));
 
                 ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
@@ -260,7 +267,7 @@ int main(int argc, char** argv, char** env) {
             input.RMB_drag_x = 0;
             input.RMB_drag_y = 0;
 
-            // Rendering
+            // Render Dear ImGui
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         }

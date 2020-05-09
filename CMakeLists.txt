@@ -17,6 +17,7 @@ set(HEADER_FILES
         include/renderer.h
         include/shader.h
         include/texture.h
+        include/skybox.h
         include/input.h
         include/camera.h
         include/model.h
@@ -33,6 +34,7 @@ set(SOURCE_FILES
         src/renderer.cpp
         src/shader.cpp
         src/texture.cpp
+        src/skybox.cpp
         src/input.cpp
         src/camera.cpp
         src/model.cpp

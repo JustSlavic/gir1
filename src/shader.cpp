@@ -56,7 +56,7 @@ GLuint compile_shader(GLuint type, const char* source) {
 
 
 Shader &Shader::compile() {
-    GL_CALL(id = glCreateProgram());
+    id = glCreateProgram(); GL_CHECK_ERRORS;
 
     std::vector<GLuint> shader_ids;
 
@@ -92,9 +92,8 @@ Shader& Shader::bind() {
 }
 
 
-Shader& Shader::unbind() {
+void Shader::unbind() {
     glUseProgram(0); GL_CHECK_ERRORS;
-    return *this;
 }
 
 Shader::Uniform Shader::get_uniform(const char *name) {
@@ -109,6 +108,7 @@ Shader::Uniform Shader::get_uniform(const char *name) {
 }
 
 Shader &Shader::set_uniform_4f(Shader::Uniform uniform, float x1, float x2, float x3, float x4) {
+    this->bind();
     glUniform4f(uniform.location, x1, x2, x3, x4); GL_CHECK_ERRORS;
     return *this;
 }
@@ -120,6 +120,7 @@ Shader &Shader::set_uniform_4f(const char *name, float x1, float x2, float x3, f
 }
 
 Shader &Shader::set_uniform_mat4f(Shader::Uniform uniform, const glm::mat4 &matrix) {
+    this->bind();
     GL_CALL(glUniformMatrix4fv(uniform.location, 1, GL_FALSE, &matrix[0][0]));
     return *this;
 }
@@ -131,6 +132,7 @@ Shader &Shader::set_uniform_mat4f(const char *name, const glm::mat4 &matrix) {
 }
 
 Shader &Shader::set_uniform_1i(Shader::Uniform uniform, int x) {
+    this->bind();
     GL_CALL(glUniform1i(uniform.location, x));
     return *this;
 }
