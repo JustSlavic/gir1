@@ -7,12 +7,14 @@
 #include <GL/glew.h>
 
 
-Texture::Texture(const char *filename) :filename(filename) {
+Texture::Texture(const char *filename) {
     GL_CALL(glGenTextures(1, &id));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, id));
 
+    i32 width, height, bits_per_pixel;
+
     stbi_set_flip_vertically_on_load(true);
-    buffer = stbi_load(filename, &width, &height, &bits_per_pixel, STBI_rgb_alpha);
+    unsigned char *buffer = stbi_load(filename, &width, &height, &bits_per_pixel, STBI_rgb_alpha);
 
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
@@ -25,12 +27,12 @@ Texture::Texture(const char *filename) :filename(filename) {
 }
 
 Texture::~Texture() {
-    GL_CALL(glDeleteTextures(1, &id));
+    glDeleteTextures(1, &id); GL_CHECK_ERRORS;
 }
 
 void Texture::bind(unsigned int slot) const {
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + slot));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, id));
+    glActiveTexture(GL_TEXTURE0 + slot); GL_CHECK_ERRORS;
+    glBindTexture(GL_TEXTURE_2D, id); GL_CHECK_ERRORS;
 }
 
 void Texture::unbind() {
