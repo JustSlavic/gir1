@@ -57,6 +57,7 @@ HEADERS = \
 	model \
 	model_asset \
 	model_instance \
+	point_light \
 	camera \
 	input \
 	version \
@@ -76,6 +77,7 @@ SOURCES = \
 	model \
 	model_asset \
 	model_instance \
+	point_light \
 	camera \
 	input \
 	version \

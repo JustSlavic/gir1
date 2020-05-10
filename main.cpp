@@ -29,6 +29,7 @@
 #include <input.h>
 #include <camera.h>
 #include <version.h>
+#include <point_light.h>
 
 #define CAPTURE_CURSOR 0
 #define LOAD_SKYBOX 0
@@ -161,8 +162,6 @@ int main(int argc, char** argv, char** env) {
     skybox.transform = glm::scale(glm::mat4(1.0f), glm::vec3(500.0f));
 #endif
 
-    glm::vec3 light_color{0.8f, 0.9f, 1.0f};
-
     /* Setting cubes */
     Texture texture("resources/textures/container2.png");
 
@@ -194,17 +193,16 @@ int main(int argc, char** argv, char** env) {
         glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 3.0f)),
         glm::vec3(2.0f));
 
+
+    PointLight light_source(glm::vec3(1.0f, 3.0f, 3.0f), glm::vec3(1.0f));
+
     ModelAsset light_source_asset = ModelAsset::load_my_model("resources/models/cube.model");
     light_source_asset.shader = &light_source_shader;
 
-    ModelInstance light_source;
-    light_source.asset = &light_source_asset;
-    light_source.transform =
-        glm::scale(
-        glm::translate(
-            glm::mat4(1.0f), glm::vec3(-2.0f, 2.0f, 3.0f)),
-            glm::vec3(0.2));
-
+    ModelInstance light_source_cube;
+    light_source_cube.asset = &light_source_asset;
+    light_source_cube.transform =
+        glm::scale(glm::translate(glm::mat4(1.0f), light_source.position), glm::vec3(0.2));
 
     auto& input = KeyboardState::instance();
     glfwGetCursorPos(window, &input.cursor_x, &input.cursor_y);
@@ -260,22 +258,31 @@ int main(int argc, char** argv, char** env) {
 #endif
 
         {
-            light_source_shader.set_uniform_mat4f("u_model", light_source.transform);
+            light_source_shader.set_uniform_mat4f("u_model", light_source_cube.transform);
             light_source_shader.set_uniform_mat4f("u_view", view);
-            light_source_shader.set_uniform_vec3f("u_light_color", light_color);
-            Renderer::draw(light_source);
+            light_source_shader.set_uniform_vec3f("u_light_color", light_source.diffuse);
+            Renderer::draw(light_source_cube);
         }
 
         for (auto& model : models) {
             glm::mat4 mvp = projection * view * model.transform;
 
+            // Setting MVP components
             model.asset->shader->set_uniform_mat4f("u_model", model.transform);
             model.asset->shader->set_uniform_mat4f("u_view", view);
-            // moved normal matrix into view space
+
+            // Setting normal matrix for normals rescaling
+            // Also moved normal matrix into view space
             model.asset->shader->set_uniform_mat4f("u_normal_matrix", glm::transpose(glm::inverse(view * model.transform)));
-            // light source position is also moved into view space
-            model.asset->shader->set_uniform_vec3f("u_light_position", view * light_source.transform[3]);
-            model.asset->shader->set_uniform_vec3f("u_light_color", light_color);
+
+            // Setting light properties
+            // Light source position also is moved into view space
+            model.asset->shader->set_uniform_vec3f("u_light.position", view * glm::vec4(light_source.position, 1.0f));
+            model.asset->shader->set_uniform_vec3f("u_light.ambient", light_source.ambient);
+            model.asset->shader->set_uniform_vec3f("u_light.diffuse", light_source.diffuse);
+            model.asset->shader->set_uniform_vec3f("u_light.specular", light_source.specular);
+
+            // Setting view position for specular light computation
             model.asset->shader->set_uniform_vec3f("u_view_position", camera.position);
             Renderer::draw(model);
         }
@@ -292,13 +299,23 @@ int main(int argc, char** argv, char** env) {
                 static int counter = 0;
 
                 ImGui::Begin("Girl debug view"); // Create a window called "Hello, world!" and append into it.
-                ImGui::SliderFloat("Light x:", &light_source.transform[3].x, -5, 5);
-                ImGui::SliderFloat("Light y:", &light_source.transform[3].y, -5, 5);
-                ImGui::SliderFloat("Light z:", &light_source.transform[3].z, -5, 5);
+                ImGui::SliderFloat("Light x:", &light_source.position.x, -5, 5);
+                ImGui::SliderFloat("Light y:", &light_source.position.y, -5, 5);
+                ImGui::SliderFloat("Light z:", &light_source.position.z, -5, 5);
+
+                ImGui::SliderFloat("Light ambient:", &light_source.ambient_strength, 0, 1);
+                ImGui::SliderFloat("Light specular:", &light_source.specular_strength, 0, 10);
+
+                // Follow light source with cube that represents it
+                light_source_cube.transform[3] = glm::vec4(light_source.position, 1.0f);
+
 //                ImGui::Checkbox("Demo Window", &show_demo_window); // Edit bools storing our window open/close state
 //                ImGui::Checkbox("Another Window", &show_another_window);
 
-                ImGui::ColorEdit3("Light color", &light_color.x); // Edit 3 floats representing a color
+                ImGui::ColorEdit3("Light color", &light_source.diffuse.x); // Edit 3 floats representing a color
+
+                light_source.ambient = light_source.diffuse * light_source.ambient_strength;
+                light_source.specular = light_source.diffuse * light_source.specular_strength;
 
                 // Buttons return true when clicked (most widgets return true when edited/activated)
                 if (ImGui::Button("Button")) { counter++; }

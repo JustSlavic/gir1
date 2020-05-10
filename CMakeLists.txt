@@ -20,6 +20,7 @@ set(HEADER_FILES
         include/skybox.h
         include/input.h
         include/camera.h
+        include/point_light.h
         include/model.h
         include/model_asset.h
         include/model_instance.h
@@ -37,6 +38,7 @@ set(SOURCE_FILES
         src/skybox.cpp
         src/input.cpp
         src/camera.cpp
+        src/point_light.cpp
         src/model.cpp
         src/model_asset.cpp
         src/model_instance.cpp
