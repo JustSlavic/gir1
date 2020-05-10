@@ -21,7 +21,7 @@ void main() {
     vec3 diffuse_light = diffuse * u_light_color;
 
     float specular_strength = 0.5;
-    int shininess = 64;
+    int shininess = 32;
     // vec3 view_direction = normalize(u_view_position - v_fragment_position);
     vec3 view_direction = normalize(-v_fragment_position); // viewer position is 0,0,0 because we are in view space now
     vec3 reflected_direction = reflect(-light_direction, normal);

@@ -164,7 +164,7 @@ int main(int argc, char** argv, char** env) {
     glm::vec3 light_color{0.8f, 0.9f, 1.0f};
 
     /* Setting cubes */
-    Texture texture("resources/textures/wall.png");
+    Texture texture("resources/textures/container2.png");
 
     Shader shader;
     shader.load_shader(Shader::Type::Vertex, "resources/shaders/texture_2d.vshader")
