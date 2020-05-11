@@ -24,6 +24,7 @@ set(HEADER_FILES
         include/model.h
         include/model_asset.h
         include/model_instance.h
+        include/material.h
         include/utils.h
         include/version.h
         include/vertex_array.h
@@ -42,6 +43,7 @@ set(SOURCE_FILES
         src/model.cpp
         src/model_asset.cpp
         src/model_instance.cpp
+        src/material.cpp
         src/utils.cpp
         src/version.cpp
         src/vertex_array.cpp

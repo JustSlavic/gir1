@@ -30,6 +30,7 @@
 #include <camera.h>
 #include <version.h>
 #include <point_light.h>
+#include <material.h>
 
 #define CAPTURE_CURSOR 0
 #define LOAD_SKYBOX 0
@@ -163,14 +164,14 @@ int main(int argc, char** argv, char** env) {
 #endif
 
     /* Setting cubes */
-    Texture texture("resources/textures/container2.png");
-    Texture specular_map("resources/textures/container2_specular_map.png");
-
     Shader shader;
     shader.load_shader(Shader::Type::Vertex, "resources/shaders/texture_2d.vshader")
           .load_shader(Shader::Type::Fragment, "resources/shaders/texture_2d.fshader")
           .compile()
           .bind();
+
+    Material wooden_crate("resources/textures/container2.png", "resources/textures/container2_specular_map.png");
+    wooden_crate.shader = &shader;
 
     shader.set_uniform_1i("u_material.diffuse", 0);
     shader.set_uniform_1i("u_material.specular", 1);
@@ -181,9 +182,7 @@ int main(int argc, char** argv, char** env) {
     light_source_shader.compile().bind();
 
     ModelAsset cube_asset = ModelAsset::load_my_model("resources/models/cube.model");
-    cube_asset.texture = &texture;
-    cube_asset.specular_map = &specular_map;
-    cube_asset.shader = &shader;
+    cube_asset.material = &wooden_crate;
 
     std::vector<ModelInstance> models(2);
     models[0].asset = &cube_asset;
@@ -198,9 +197,10 @@ int main(int argc, char** argv, char** env) {
 
 
     PointLight light_source(glm::vec3(1.0f, 3.0f, 3.0f), glm::vec3(1.0f));
-
+    Material glowing_material;
+    glowing_material.shader = &light_source_shader;
     ModelAsset light_source_asset = ModelAsset::load_my_model("resources/models/cube.model");
-    light_source_asset.shader = &light_source_shader;
+    light_source_asset.material = &glowing_material;
 
     ModelInstance light_source_cube;
     light_source_cube.asset = &light_source_asset;
@@ -268,22 +268,22 @@ int main(int argc, char** argv, char** env) {
 
         for (auto& model : models) {
             // Setting MVP components
-            model.asset->shader->set_uniform_mat4f("u_model", model.transform);
-            model.asset->shader->set_uniform_mat4f("u_view", view);
+            model.asset->material->shader->set_uniform_mat4f("u_model", model.transform);
+            model.asset->material->shader->set_uniform_mat4f("u_view", view);
 
             // Setting normal matrix for normals rescaling
             // Also moved normal matrix into view space
-            model.asset->shader->set_uniform_mat4f("u_normal_matrix", glm::transpose(glm::inverse(view * model.transform)));
+            model.asset->material->shader->set_uniform_mat4f("u_normal_matrix", glm::transpose(glm::inverse(view * model.transform)));
 
             // Setting light properties
             // Light source position also is moved into view space
-            model.asset->shader->set_uniform_vec3f("u_light.position", view * glm::vec4(light_source.position, 1.0f));
-            model.asset->shader->set_uniform_vec3f("u_light.ambient", light_source.ambient);
-            model.asset->shader->set_uniform_vec3f("u_light.diffuse", light_source.diffuse);
-            model.asset->shader->set_uniform_vec3f("u_light.specular", light_source.specular);
+            model.asset->material->shader->set_uniform_vec3f("u_light.position", view * glm::vec4(light_source.position, 1.0f));
+            model.asset->material->shader->set_uniform_vec3f("u_light.ambient", light_source.ambient);
+            model.asset->material->shader->set_uniform_vec3f("u_light.diffuse", light_source.diffuse);
+            model.asset->material->shader->set_uniform_vec3f("u_light.specular", light_source.specular);
 
             // Setting view position for specular light computation
-            model.asset->shader->set_uniform_vec3f("u_view_position", camera.position);
+            model.asset->material->shader->set_uniform_vec3f("u_view_position", camera.position);
             Renderer::draw(model);
         }
 

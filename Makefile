@@ -53,6 +53,7 @@ HEADERS = \
 	vertex_buffer_layout \
 	shader \
 	texture \
+	material \
 	skybox \
 	model \
 	model_asset \
@@ -73,6 +74,7 @@ SOURCES = \
 	vertex_buffer_layout \
 	shader \
 	texture \
+	material \
 	skybox \
 	model \
 	model_asset \
