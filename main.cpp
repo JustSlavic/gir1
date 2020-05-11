@@ -164,6 +164,7 @@ int main(int argc, char** argv, char** env) {
 
     /* Setting cubes */
     Texture texture("resources/textures/container2.png");
+    Texture specular_map("resources/textures/container2_specular_map.png");
 
     Shader shader;
     shader.load_shader(Shader::Type::Vertex, "resources/shaders/texture_2d.vshader")
@@ -171,7 +172,8 @@ int main(int argc, char** argv, char** env) {
           .compile()
           .bind();
 
-    shader.set_uniform_1i("u_Texture_1", 0);
+    shader.set_uniform_1i("u_material.diffuse", 0);
+    shader.set_uniform_1i("u_material.specular", 1);
 
     Shader light_source_shader;
     light_source_shader.load_shader(Shader::Type::Vertex, "resources/shaders/light_source.vshader");
@@ -180,6 +182,7 @@ int main(int argc, char** argv, char** env) {
 
     ModelAsset cube_asset = ModelAsset::load_my_model("resources/models/cube.model");
     cube_asset.texture = &texture;
+    cube_asset.specular_map = &specular_map;
     cube_asset.shader = &shader;
 
     std::vector<ModelInstance> models(2);
@@ -208,7 +211,6 @@ int main(int argc, char** argv, char** env) {
     glfwGetCursorPos(window, &input.cursor_x, &input.cursor_y);
 
     Camera camera;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     double t = glfwGetTime();
     bool skybox_active = false;
 
@@ -265,8 +267,6 @@ int main(int argc, char** argv, char** env) {
         }
 
         for (auto& model : models) {
-            glm::mat4 mvp = projection * view * model.transform;
-
             // Setting MVP components
             model.asset->shader->set_uniform_mat4f("u_model", model.transform);
             model.asset->shader->set_uniform_mat4f("u_view", view);
@@ -323,9 +323,9 @@ int main(int argc, char** argv, char** env) {
                 ImGui::Text("counter = %d", counter);
 
                 ImGui::Text("Cursor: (%5.2lf, %5.2lf)", input.cursor_x, input.cursor_y);
-                ImGui::Text("Cursor dr: (%5.2lf, %5.2lf)", input.cursor_dx, input.cursor_dy);
-                ImGui::Text("LMB drag: (%5.2lf, %5.2lf)", input.LMB_drag_x, input.LMB_drag_y);
-                ImGui::Text("RMB drag: (%5.2lf, %5.2lf)", input.RMB_drag_x, input.RMB_drag_y);
+                // ImGui::Text("Cursor dr: (%5.2lf, %5.2lf)", input.cursor_dx, input.cursor_dy);
+                // ImGui::Text("LMB drag: (%5.2lf, %5.2lf)", input.LMB_drag_x, input.LMB_drag_y);
+                // ImGui::Text("RMB drag: (%5.2lf, %5.2lf)", input.RMB_drag_x, input.RMB_drag_y);
 
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS); dt = %.3f", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, dt);
                 ImGui::End();

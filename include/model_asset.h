@@ -11,6 +11,7 @@
 struct ModelAsset {
     Shader *shader{nullptr};
     Texture *texture{nullptr};
+    Texture *specular_map{nullptr};
 
     VertexArray *vertex_array{nullptr};
     VertexBuffer *vertex_buffer{nullptr};

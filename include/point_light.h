@@ -7,12 +7,12 @@
 struct PointLight {
     glm::vec3 position;
 
+    float ambient_strength = 0.2f;
+    float specular_strength = 1.0f;
+
     glm::vec3 ambient;
     glm::vec3 diffuse;
     glm::vec3 specular;
-
-    float ambient_strength = 0.2f;
-    float specular_strength = 0.2f;
 
     PointLight(glm::vec3 position, glm::vec3 color);
 };

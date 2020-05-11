@@ -1,10 +1,10 @@
 #version 330 core
 
-// struct Material {
-//     sampler2D diffuse;   // texture defines diffuse color
-//     vec3      specular;
-//     float     shininess;
-// }
+struct Material {
+    sampler2D diffuse;   // texture defines diffuse color
+    sampler2D specular;  // specular map is also a texture
+    float     shininess;
+};
 
 struct Light {
     vec3 position;
@@ -23,10 +23,10 @@ in vec3 v_normal;
 uniform sampler2D u_Texture_1;
 uniform vec3 u_view_position;
 uniform Light u_light;
-// uniform Material u_material;
+uniform Material u_material;
 
 void main() {
-    vec4 texture_color = texture(u_Texture_1, v_texture_coordinates);
+    vec4 texture_color = texture(u_material.diffuse, v_texture_coordinates);
     vec3 normal = normalize(v_normal);
     vec3 light_direction = normalize(u_light.position - v_fragment_position);
 
@@ -40,7 +40,7 @@ void main() {
     vec3 view_direction = normalize(-v_fragment_position); // viewer position is 0,0,0 because we are in view space now
     vec3 reflected_direction = reflect(-light_direction, normal);
     float specular = pow(max(dot(view_direction, reflected_direction), 0.0), shininess);
-    vec3 specular_light = u_light.specular * specular; // (specular * vec3(texture_color)); // replace texture_color with specular map
+    vec3 specular_light = u_light.specular * (specular * vec3(texture(u_material.specular, v_texture_coordinates))); // replace texture_color with specular map
 
     vec3 result_light = ambient_light + diffuse_light + specular_light;
 

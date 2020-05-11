@@ -4,8 +4,8 @@
 
 PointLight::PointLight(glm::vec3 position, glm::vec3 color)
     : position(position)
-    , ambient(0.1f)
+    , ambient(ambient_strength)
     , diffuse(color)
-    , specular(0.1f)
+    , specular(specular_strength)
 {
 }
