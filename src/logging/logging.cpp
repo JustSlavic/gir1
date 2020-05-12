@@ -49,23 +49,43 @@ LogGlobalContext &LogGlobalContext::instance() {
     return instance;
 }
 
-void LogGlobalContext::write(std::stringstream &log, Log::Level log_level, LogLocalContext ctx) {
+void LogGlobalContext::write(std::stringstream &log, Log::Level log_level, LogLocalContext ctx) const {
     if (log_level < level) return;
 
     std::time_t t = std::time(nullptr);
     std::tm tm = *std::localtime(&t);
 
-    std::cout << std::put_time(&tm, "%F %T ")
-              << log_level_to_cstr(log_level);
+    for (auto& handler : outputs) {
+        // Could not push parts of the log directly, because handler is a pointer to a base class
+        // and pure virtual functions cannot be template
+        std::stringstream temporary_log;
+        temporary_log
+            << std::put_time(&tm, "%F %T ")
+            << std::setw(8) << log_level_to_cstr(log_level);
+        if (ctx.name) temporary_log << " [" << ctx.name << "]";
+        temporary_log << " " << log.str();
 
-    if (ctx.name) {
-        std::cout << " [" << ctx.name << "] " << log.str() << std::endl;
-    } else {
-        std::cout << " " << log.str() << std::endl;
+        handler->write(temporary_log);
     }
 }
 
 LogGlobalContext &LogGlobalContext::set_level(Log::Level new_level) {
     this->level = new_level;
+    return *this;
+}
+
+LogGlobalContext &LogGlobalContext::attach(std::ostream &os) {
+    outputs.push_back(std::make_unique<LogStreamHandler>(os));
+    return *this;
+}
+
+LogGlobalContext &LogGlobalContext::attach(const char *filename) {
+    outputs.push_back(std::make_unique<LogFileHandler>(filename));
+    return *this;
+}
+
+LogGlobalContext &LogGlobalContext::reset() {
+    level = Log::Level::Debug;
+    outputs.clear();
     return *this;
 }

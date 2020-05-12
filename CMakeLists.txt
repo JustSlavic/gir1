@@ -27,6 +27,7 @@ set(HEADER_FILES
         include/material.h
         include/utils.h
         include/logging/logging.h
+        include/logging/handler.h
         include/version.h
         include/vertex_array.h
         include/vertex_buffer.h
@@ -47,6 +48,7 @@ set(SOURCE_FILES
         src/material.cpp
         src/utils.cpp
         src/logging/logging.cpp
+        src/logging/handler.cpp
         src/version.cpp
         src/vertex_array.cpp
         src/vertex_buffer.cpp

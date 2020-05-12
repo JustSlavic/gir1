@@ -3,6 +3,9 @@
 
 #include <sstream>
 #include <ostream>
+#include <vector>
+#include <memory>
+#include <logging/handler.h>
 
 
 #define LOG_DEBUG Log(log_ctx_).debug()
@@ -48,11 +51,15 @@ Log &operator<<(Log &logger, T&& data) {
 
 struct LogGlobalContext {
     Log::Level level = Log::Level::Debug;
+    std::vector<std::unique_ptr<LogHandler>> outputs;
 
     static LogGlobalContext &instance();
     LogGlobalContext &set_level(Log::Level level);
+    LogGlobalContext &attach(std::ostream &os);
+    LogGlobalContext &attach(const char *filename);
+    LogGlobalContext &reset();
 
-    void write(std::stringstream &log, Log::Level log_level, LogLocalContext ctx);
+    void write(std::stringstream &log, Log::Level log_level, LogLocalContext ctx) const;
 
 private:
     LogGlobalContext() = default;

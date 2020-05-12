@@ -6,7 +6,8 @@ find_library(gtest_main REQUIRED)
 include_directories(include)
 
 set(SOURCE_FILES
-        ../include/logging/logging.h ../src/logging/logging.cpp)
+        ../include/logging/logging.h ../src/logging/logging.cpp
+        ../include/logging/handler.h ../src/logging/handler.cpp)
 
 set(TEST_FILES
         test.cpp
