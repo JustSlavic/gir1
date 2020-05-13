@@ -1,4 +1,5 @@
 #include <logging/logging.h>
+#include <logging/handler.h>
 #include <iostream>
 #include <ctime>
 #include <iomanip>
@@ -55,16 +56,17 @@ void LogGlobalContext::write(std::stringstream &log, Log::Level log_level, LogLo
     std::time_t t = std::time(nullptr);
     std::tm tm = *std::localtime(&t);
 
-    for (auto& handler : outputs) {
-        // Could not push parts of the log directly, because handler is a pointer to a base class
-        // and pure virtual functions cannot be template
-        std::stringstream temporary_log;
-        temporary_log
+    // Could not push parts of the log directly, because handler is a pointer to a base class
+    // and pure virtual functions cannot be template
+    std::stringstream temporary_log;
+    temporary_log
             << std::put_time(&tm, "%F %T ")
             << std::setw(8) << log_level_to_cstr(log_level);
-        if (ctx.name) temporary_log << " [" << ctx.name << "]";
-        temporary_log << " " << log.str();
+    if (ctx.name) temporary_log << " [" << ctx.name << "]";
+    temporary_log << " " << log.str();
 
+    for (auto& handler : outputs) {
+        if (log_level < handler->level) continue;
         handler->write(temporary_log);
     }
 }
@@ -74,13 +76,13 @@ LogGlobalContext &LogGlobalContext::set_level(Log::Level new_level) {
     return *this;
 }
 
-LogGlobalContext &LogGlobalContext::attach(std::ostream &os) {
-    outputs.push_back(std::make_unique<LogStreamHandler>(os));
+LogGlobalContext &LogGlobalContext::attach(std::ostream &os, Log::Level handler_level) {
+    outputs.push_back(std::make_unique<LogStreamHandler>(os, handler_level));
     return *this;
 }
 
-LogGlobalContext &LogGlobalContext::attach(const char *filename) {
-    outputs.push_back(std::make_unique<LogFileHandler>(filename));
+LogGlobalContext &LogGlobalContext::attach(const char *filename, Log::Level handler_level) {
+    outputs.push_back(std::make_unique<LogFileHandler>(filename, handler_level));
     return *this;
 }
 

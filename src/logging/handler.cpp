@@ -2,10 +2,11 @@
 #include <sstream>
 
 
-LogFileHandler::LogFileHandler(const char *filename)
+LogFileHandler::LogFileHandler(const char *filename, Log::Level handler_level)
     : output(filename, std::ios::app)
 {
     if (output.bad()) throw std::runtime_error("Cannot open log file!");
+    level = handler_level;
 }
 
 void LogFileHandler::write(const std::stringstream &log) {
@@ -13,9 +14,10 @@ void LogFileHandler::write(const std::stringstream &log) {
     output.flush();
 }
 
-LogStreamHandler::LogStreamHandler(std::ostream &stream)
+LogStreamHandler::LogStreamHandler(std::ostream &stream, Log::Level handler_level)
     : output(stream)
 {
+    level = handler_level;
 }
 
 void LogStreamHandler::write(const std::stringstream &log) {

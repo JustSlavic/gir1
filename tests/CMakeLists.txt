@@ -10,7 +10,6 @@ set(SOURCE_FILES
         ../include/logging/handler.h ../src/logging/handler.cpp)
 
 set(TEST_FILES
-        test.cpp
         logging.cpp)
 
 add_executable(tests

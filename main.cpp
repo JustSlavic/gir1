@@ -1,5 +1,6 @@
 // std imports
 #include <cstdio>
+#include <iostream>
 #include <ostream>
 #include <cmath>
 
@@ -31,31 +32,22 @@
 #include <version.h>
 #include <point_light.h>
 #include <material.h>
+#include <logging/logging.h>
 
 #define CAPTURE_CURSOR 0
 #define LOAD_SKYBOX 0
 
+LOG_CONTEXT("gir1.main");
 
 static void glfw_error_callback(int error, const char* description) {
-    fprintf(stderr, "GLFW Error %d: %s\n", error, description);
-}
-
-
-std::ostream& operator<<(std::ostream& os, glm::mat4 m) {
-    for (int i = 0; i < 4; ++i) {
-        os << "|" << m[i][0] << " " << m[i][1] << " " << m[i][2] << " " << m[i][3] << "|\n";
-    }
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, glm::vec4 v) {
-    return os << "[" << v[0] << " " << v[1] << " " << v[2] << " " << v[3] << "]\n";
+    LOG_ERROR << "GLFW failed: " << error << ": " << description;
 }
 
 
 GLFWwindow* init_window(int width, int height) {
+    LOG_CONTEXT("window.init");
     if (!glfwInit()) {
-        fprintf(stderr, "Error: GLFW Init failed!\n");
+        LOG_ERROR << "Error: GLFW Init failed!";
         std::exit(ERROR_GLFW_FAILED);
     }
 
@@ -72,7 +64,8 @@ GLFWwindow* init_window(int width, int height) {
 
     GLFWwindow* window = glfwCreateWindow(width, height, "Gir1", nullptr, nullptr);
     if (!window) {
-        fprintf(stderr, "Error: GLFW CreateWindow failed!\n");
+        LOG_ERROR << "GLFW CreateWindow failed!";
+        glfwTerminate();
         std::exit(ERROR_GLFW_FAILED);
     }
 
@@ -94,7 +87,7 @@ GLFWwindow* init_window(int width, int height) {
     GLenum err = glewInit();
     if (GLEW_OK != err) {
         /* Problem: glewInit failed, something is seriously wrong. */
-        fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+        LOG_ERROR << glewGetErrorString(err);
         return nullptr;
     }
 
@@ -102,6 +95,8 @@ GLFWwindow* init_window(int width, int height) {
     glEnable(GL_DEPTH_TEST);
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);
+    GL_CHECK_ERRORS;
+    LOG_DEBUG << "GL_DEPTH_TEST enabled";
 
     return window;
 }
@@ -128,6 +123,12 @@ void init_imgui(GLFWwindow *window) {
 
 
 int main(int argc, char** argv, char** env) {
+    LogGlobalContext::instance()
+        .attach(std::cout)
+        .attach(std::cerr, Log::Level::Warning)
+        .attach("girl.log");
+    LOG_INFO << "Welcome to GIR1";
+
     glfwSetErrorCallback(glfw_error_callback);
 
     int width = 1280;
@@ -135,18 +136,14 @@ int main(int argc, char** argv, char** env) {
 
     /* Create a windowed mode window and its OpenGL context */
     auto window = init_window(width, height);
-    if (!window) {
-        glfwTerminate();
-        return -1;
-    }
-
     init_imgui(window);
 
     Renderer::init();
-    fprintf(stdout, "GIR1   v.%s\n", version);
-    fprintf(stdout, "GLEW   v.%s\n", glewGetString(GLEW_VERSION));
-    fprintf(stdout, "OpenGL v.%s\n", glGetString(GL_VERSION));
-    fprintf(stdout, "Renderer: %s\n\n", glGetString(GL_RENDERER));
+
+    LOG_INFO << "GIR1   v." << version;
+    LOG_INFO << "GLEW   v." << glewGetString(GLEW_VERSION);
+    LOG_INFO << "OpenGL v." << glGetString(GL_VERSION);
+    LOG_INFO << "Renderer: " << glGetString(GL_RENDERER);
 
 #if LOAD_SKYBOX
     /* Setting skybox */

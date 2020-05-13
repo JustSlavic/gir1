@@ -1,10 +1,13 @@
 #include <shader.h>
 #include <utils.h>
 #include <defines.h>
+#include <logging/logging.h>
 
 #include <GL/glew.h>
 #include <vector>
 
+
+LOG_CONTEXT("gir1.shader");
 
 Shader::~Shader() {
     GL_CALL(glDeleteProgram(id));
@@ -39,23 +42,23 @@ const char *shader_type_to_c_str(Shader::Type type) {
 
 
 GLuint compile_shader(GLuint type, const char* source) {
-    GL_CALL(GLuint id = glCreateShader(type));
-    GL_CALL(glShaderSource(id, 1, &source, nullptr));
-    GL_CALL(glCompileShader(id));
+    GLuint id = glCreateShader(type); GL_CHECK_ERRORS;
+    glShaderSource(id, 1, &source, nullptr); GL_CHECK_ERRORS;
+    glCompileShader(id); GL_CHECK_ERRORS;
 
     int result;
-    GL_CALL(glGetShaderiv(id, GL_COMPILE_STATUS, &result));
+    glGetShaderiv(id, GL_COMPILE_STATUS, &result); GL_CHECK_ERRORS;
     if (result == GL_FALSE) {
         int length;
-        GL_CALL(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length));
+        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length); GL_CHECK_ERRORS;
 
         char* message = new char[length];
 
-        GL_CALL(glGetShaderInfoLog(id, length, &length, message));
-        printf("Error in compiling shader!\n");
-        printf("Error: %s\n", message);
+        glGetShaderInfoLog(id, length, &length, message); GL_CHECK_ERRORS;
+        LOG_ERROR << "Error in compiling shader!";
+        LOG_ERROR << message;
 
-        GL_CALL(glDeleteShader(id));
+        glDeleteShader(id); GL_CHECK_ERRORS;
         delete[] message;
         return 0;
     }
@@ -74,13 +77,13 @@ Shader &Shader::compile() {
         glAttachShader(id, shader_id); GL_CHECK_ERRORS;
         shader_ids.push_back(shader_id);
 
-        printf("%s shader is compiled successfully\n", shader_type_to_c_str(pair.first));
+        LOG_DEBUG << shader_type_to_c_str(pair.first) << " shader compiled successfully";
     }
 
     glLinkProgram(id); GL_CHECK_ERRORS;
     glValidateProgram(id); GL_CHECK_ERRORS;
 
-    printf("Shaders linked successfully\n");
+    LOG_DEBUG << "Shaders linked successfully";
 
     for (auto& shader_id : shader_ids) {
         glDeleteShader(shader_id); GL_CHECK_ERRORS;

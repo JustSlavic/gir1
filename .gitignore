@@ -6,6 +6,7 @@ build/
 package/
 *.o
 *.ini
+*.log
 *.zip
 version.cpp
 gir1

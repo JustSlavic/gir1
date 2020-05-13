@@ -64,6 +64,8 @@ HEADERS = \
 	version \
 	defines \
 	utils \
+	logging/logging \
+	logging/handler \
 
 
 SOURCES = \
@@ -84,10 +86,16 @@ SOURCES = \
 	input \
 	version \
 	utils \
+	logging/logging \
+	logging/handler \
 
+
+TEST_DEPENDENCIES = \
+	logging/logging \
+	logging/handler
 
 TEST_SOURCES = \
-	test \
+	logging
 
 
 HEADERS      := $(addprefix include/, $(addsuffix .h,   $(HEADERS)))
@@ -96,8 +104,11 @@ SOURCES      := $(addprefix src/,     $(addsuffix .cpp, $(SOURCES)))
 
 STATIC_LIBS  := $(foreach lib, $(LOCAL_LIBS), $(addprefix libs/$(lib)/bin/lib, $(addsuffix .a, $(lib))))
 
+TEST_DEPEN_H := $(addprefix include/, $(addsuffix .h,   $(TEST_DEPENDENCIES)))
+TEST_DEPEN_O := $(addprefix build/,   $(addsuffix .o,   $(TEST_DEPENDENCIES)))
+TEST_DEPEN_C := $(addprefix src/,     $(addsuffix .cpp, $(TEST_DEPENDENCIES)))
 TEST_OBJECTS := $(addprefix build/,   $(addsuffix .o,   $(TEST_SOURCES)))
-TEST_SOURCES := $(addprefix test/,    $(addsuffix .cpp, $(TEST_SOURCES)))
+TEST_SOURCES := $(addprefix tests/,   $(addsuffix .cpp, $(TEST_SOURCES)))
 
 CURRENT_DIR  := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
@@ -139,9 +150,9 @@ ${STATIC_LIBS}:
 # ================= TESTS ================= #
 
 # Compile test executable
-bin/test: $(TEST_OBJECTS)
+bin/test: $(TEST_OBJECTS) $(TEST_DEPEN_H) $(TEST_DEPEN_C)
 	@mkdir -p bin
-	g++ -o bin/test $(TEST_OBJECTS) $(CXXFLAGS) -lgtest -lgtest_main -pthread
+	g++ -o bin/test $(TEST_OBJECTS) $(TEST_DEPEN_O) $(CXXFLAGS) -lgtest -lgtest_main -pthread
 
 
 # Compile test object files

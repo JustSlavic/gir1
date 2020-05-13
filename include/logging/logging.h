@@ -5,9 +5,9 @@
 #include <ostream>
 #include <vector>
 #include <memory>
-#include <logging/handler.h>
 
 
+#define LOG_CONTEXT(name) static LogLocalContext log_ctx_(name)
 #define LOG_DEBUG Log(log_ctx_).debug()
 #define LOG_INFO Log(log_ctx_).info()
 #define LOG_WARNING Log(log_ctx_).warning()
@@ -49,14 +49,15 @@ Log &operator<<(Log &logger, T&& data) {
     return logger;
 }
 
+struct LogHandler;
 struct LogGlobalContext {
     Log::Level level = Log::Level::Debug;
     std::vector<std::unique_ptr<LogHandler>> outputs;
 
     static LogGlobalContext &instance();
     LogGlobalContext &set_level(Log::Level level);
-    LogGlobalContext &attach(std::ostream &os);
-    LogGlobalContext &attach(const char *filename);
+    LogGlobalContext &attach(std::ostream &os, Log::Level level = Log::Level::Debug);
+    LogGlobalContext &attach(const char *filename, Log::Level level = Log::Level::Debug);
     LogGlobalContext &reset();
 
     void write(std::stringstream &log, Log::Level log_level, LogLocalContext ctx) const;

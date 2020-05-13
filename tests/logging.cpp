@@ -2,7 +2,7 @@
 #include <logging/logging.h>
 
 
-LogLocalContext log_ctx_("Google test");
+LOG_CONTEXT("Google test");
 
 TEST(Logging, Basic) {
     LogGlobalContext::instance().attach(std::cout);
@@ -16,7 +16,13 @@ TEST(Logging, Basic) {
 
 TEST(Logging, LocalContext) {
     LogGlobalContext::instance().attach(std::cout);
-    Log(log_ctx_).info() << "Hello contexed sailor!";
+    LOG_INFO << "Hello sailor!";
+
+    {
+        LOG_CONTEXT("nested context");
+        LOG_INFO << "Nested";
+    }
+
     LogGlobalContext::instance().reset();
     EXPECT_TRUE(true);
 }
@@ -25,24 +31,27 @@ TEST(Logging, DisabledLog) {
     LogGlobalContext::instance()
         .attach(std::cout)
         .set_level(Log::Level::Disabled);
-    Log().error() << "Hello sailor!";
-    LogGlobalContext::instance().reset();
-    EXPECT_TRUE(true);
-}
-
-TEST(Logging, Macros) {
-    LogGlobalContext::instance().attach(std::cout);
-    LOG_DEBUG << "Debug macro output";
-    LOG_INFO << "Info macro output";
-    LOG_WARNING << "Warning macro output";
-    LOG_ERROR << "Error macro output";
+    LOG_ERROR << "Hello sailor!";
     LogGlobalContext::instance().reset();
     EXPECT_TRUE(true);
 }
 
 TEST(Logging, FileOutput) {
-    LogGlobalContext::instance().attach("log.txt");
+    LogGlobalContext::instance().attach("GTest.log");
     LOG_INFO << "Wow! So doge!";
     LogGlobalContext::instance().reset();
+    EXPECT_TRUE(true);
+}
+
+TEST(Logging, HandlerLevel) {
+    LogGlobalContext::instance()
+        .attach(std::cout, Log::Level::Debug)
+        .attach("GTest.log", Log::Level::Error);
+
+    LOG_DEBUG << "Handler level test: debug log";
+    LOG_INFO << "Handler level test: info log";
+    LOG_WARNING << "Handler level test: warning log";
+    LOG_ERROR << "Handler level test: error log";
+
     EXPECT_TRUE(true);
 }
