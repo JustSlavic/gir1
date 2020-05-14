@@ -7,10 +7,10 @@
 #include <vector>
 
 
-LOG_CONTEXT("gir1.shader");
+LOG_CONTEXT("shader");
 
 Shader::~Shader() {
-    GL_CALL(glDeleteProgram(id));
+    glDeleteProgram(id); GL_CHECK_ERRORS;
 }
 
 
@@ -128,7 +128,7 @@ Shader &Shader::set_uniform_4f(const char *name, float x1, float x2, float x3, f
 
 Shader &Shader::set_uniform_mat4f(Shader::Uniform uniform, const glm::mat4 &matrix) {
     this->bind();
-    GL_CALL(glUniformMatrix4fv(uniform.location, 1, GL_FALSE, &matrix[0][0]));
+    glUniformMatrix4fv(uniform.location, 1, GL_FALSE, &matrix[0][0]); GL_CHECK_ERRORS;
     return *this;
 }
 
@@ -140,7 +140,7 @@ Shader &Shader::set_uniform_mat4f(const char *name, const glm::mat4 &matrix) {
 
 Shader &Shader::set_uniform_1i(Shader::Uniform uniform, int x) {
     this->bind();
-    GL_CALL(glUniform1i(uniform.location, x));
+    glUniform1i(uniform.location, x); GL_CHECK_ERRORS;
     return *this;
 }
 
