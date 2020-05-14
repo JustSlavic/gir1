@@ -1,0 +1,23 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/3/syntax.html
+name : Gir1 Log
+file_extensions : [log]
+scope : gir1.log
+
+contexts :
+  main :
+    - match : (\d{4}-\d{2}-\d{2})
+      scope : comment.block
+    - match : (\d{2}:\d{2}:\d{2})
+      scope : comment.block
+    - match : DEBUG
+      scope : comment.block
+    - match : INFO
+      scope : variable.function
+    - match : WARNING
+      scope : constant.numeric
+    - match : ERROR
+      scope : markup.deleted
+    - match : (\[[^\]]+\])
+      scope : string
