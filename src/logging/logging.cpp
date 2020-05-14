@@ -4,7 +4,6 @@
 #include <ctime>
 #include <iomanip>
 
-
 LogLocalContext::LogLocalContext() noexcept : name(nullptr) {}
 
 LogLocalContext::LogLocalContext(const char *name) noexcept : name(name) {}

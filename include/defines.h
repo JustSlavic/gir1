@@ -6,11 +6,13 @@
 #include <cstdint>
 
 #include <utils.h>
+#include <logging/logging.h>
 
 
 #define ASSERT(x) \
     if (!(x)) { \
-        fprintf(stderr, "Failed at %s:%d\n", __FILE__, __LINE__); \
+        LOG_CONTEXT(__FILE__); \
+        LOG_ERROR << "Failed at " << __FILE__ << ':' << __LINE__; \
         std::exit(1); \
     } void SEMICOLON__()
 

@@ -37,7 +37,7 @@
 #define CAPTURE_CURSOR 0
 #define LOAD_SKYBOX 0
 
-LOG_CONTEXT("gir1.main");
+LOG_CONTEXT("main");
 
 static void glfw_error_callback(int error, const char* description) {
     LOG_ERROR << "GLFW failed: " << error << ": " << description;
