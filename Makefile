@@ -107,7 +107,7 @@ STATIC_LIBS  := $(foreach lib, $(LOCAL_LIBS), $(addprefix libs/$(lib)/bin/lib, $
 TEST_DEPEN_H := $(addprefix include/, $(addsuffix .h,   $(TEST_DEPENDENCIES)))
 TEST_DEPEN_O := $(addprefix build/,   $(addsuffix .o,   $(TEST_DEPENDENCIES)))
 TEST_DEPEN_C := $(addprefix src/,     $(addsuffix .cpp, $(TEST_DEPENDENCIES)))
-TEST_OBJECTS := $(addprefix build/,   $(addsuffix .o,   $(TEST_SOURCES)))
+TEST_OBJECTS := $(addprefix build/tests/, $(addsuffix .o,   $(TEST_SOURCES)))
 TEST_SOURCES := $(addprefix tests/,   $(addsuffix .cpp, $(TEST_SOURCES)))
 
 CURRENT_DIR  := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
@@ -116,7 +116,7 @@ CURRENT_DIR  := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 # ================= RULES ================= #
 
 # Unconditional rules
-.PHONY: $(PROJECT) debug test version prebuild postbuild clean clean_main clean_libs package
+.PHONY: $(PROJECT) debug test version prebuild postbuild clean clean_main clean_libs package rebuild
 
 # Silent rules
 .SILENT: prebuild postbuild version install uninstall
@@ -126,6 +126,8 @@ CURRENT_DIR  := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 $(PROJECT): prebuild bin/$(PROJECT) postbuild
 
 debug: prebuild bin/$(PROJECT)-debug
+
+rebuild: clean_main $(PROJECT)
 
 # ================== MAIN ================== #
 
@@ -141,22 +143,21 @@ build/%.o: src/%.cpp include/%.h
 	@mkdir -p $(dir $@)
 	g++ $< -c -o $@ $(CXXFLAGS)
 
-
 # ============== LOCAL LIBRARY ============== #
 
 ${STATIC_LIBS}:
 	$(MAKE) -C $(shell dirname $(dir $@))
 
-# ================= TESTS ================= #
+# ================== TESTS ================== #
 
 # Compile test executable
-bin/test: $(TEST_OBJECTS) $(TEST_DEPEN_H) $(TEST_DEPEN_C)
+bin/test: $(TEST_OBJECTS) $(TEST_DEPEN_O)
 	@mkdir -p bin
 	g++ -o bin/test $(TEST_OBJECTS) $(TEST_DEPEN_O) $(CXXFLAGS) -lgtest -lgtest_main -pthread
 
 
 # Compile test object files
-build/%.o: tests/%.cpp $(HEADERS)
+build/tests/%.o: tests/%.cpp $(HEADERS)
 	@mkdir -p $(dir $@)
 	g++ $< -c -o $@ $(CXXFLAGS)
 
@@ -197,9 +198,7 @@ package: bin/$(PROJECT)
 	zip -r gir1_$(shell ./version.sh).zip package
 
 
-#
-# Cleaning
-#
+# ================= Cleaning ================= #
 
 .PHONY: $(LOCAL_LIBS)
 
