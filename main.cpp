@@ -126,7 +126,7 @@ int main(int argc, char** argv, char** env) {
     LogGlobalContext::instance()
         .attach(std::cout)
         .attach(std::cerr, Log::Level::Warning)
-        .attach("girl.log");
+        .attach("gir1.log");
     LOG_INFO << "Welcome to GIR1";
 
     glfwSetErrorCallback(glfw_error_callback);
