@@ -5,6 +5,7 @@
 
 #include <GL/glew.h>
 
+LOG_CONTEXT("Skybox");
 
 Skybox::Skybox(const char *dir_path) {
     float skybox_vertices[] = {
@@ -84,7 +85,7 @@ Skybox::Skybox(const char *dir_path) {
 
         unsigned char *buffer = stbi_load(path.c_str(), &width, &height, &bits_per_pixel, STBI_rgb);
         if (!buffer) {
-            fprintf(stderr, "Cannot load texture image %s", path.c_str());
+            LOG_ERROR << "Cannot load texture image " << path.c_str();
             std::exit(1);
         }
 

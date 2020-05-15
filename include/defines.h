@@ -42,7 +42,7 @@ typedef double   f64;
 
 enum GIR1_ERROR {
     ERROR_GLFW_FAILED = 256,
-    ERROT_GLEW_FAILED = 257,
+    ERROR_GLEW_FAILED = 257,
 };
 
 #endif // GIR1_DEFINES_H

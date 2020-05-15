@@ -12,6 +12,7 @@ add_subdirectory(libs/imgui)
 add_subdirectory(tests)
 
 set(HEADER_FILES
+        include/application.h
         include/defines.h
         include/index_buffer.h
         include/renderer.h
@@ -34,6 +35,7 @@ set(HEADER_FILES
         include/vertex_buffer_layout.h)
 
 set(SOURCE_FILES
+        src/application.cpp
         src/index_buffer.cpp
         src/renderer.cpp
         src/shader.cpp

@@ -18,6 +18,7 @@
 #include <imgui/imgui_impl_opengl3.h>
 
 // my imports
+#include <application.h>
 #include <model_asset.h>
 #include <model_instance.h>
 #include <vertex_array.h>
@@ -39,111 +40,16 @@
 
 LOG_CONTEXT("main");
 
-static void glfw_error_callback(int error, const char* description) {
-    LOG_ERROR << "GLFW failed: " << error << ": " << description;
-}
-
-
-GLFWwindow* init_window(int width, int height) {
-    LOG_CONTEXT("window.init");
-    if (!glfwInit()) {
-        LOG_ERROR << "Error: GLFW Init failed!";
-        std::exit(ERROR_GLFW_FAILED);
-    }
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-    glfwWindowHint(GLFW_SAMPLES, 4); // Enable 4x anti aliasing
-
-    GLFWwindow* window = glfwCreateWindow(width, height, "Gir1", nullptr, nullptr);
-    if (!window) {
-        LOG_ERROR << "GLFW CreateWindow failed!";
-        glfwTerminate();
-        std::exit(ERROR_GLFW_FAILED);
-    }
-
-    /* Make the window's context current */
-    glfwMakeContextCurrent(window);
-    /* Set input callback */
-    glfwSetKeyCallback(window, key_callback);
-    /* Set mouse position callback */
-    glfwSetCursorPosCallback(window, cursor_position_callback);
-    /* Set mouse buttons presses */
-    glfwSetMouseButtonCallback(window, mouse_button_callback);
-    /* Enable vsync */
-    glfwSwapInterval(1);
-#if CAPTURE_CURSOR
-    /* Disable cursor visibility */
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-#endif
-
-    GLenum err = glewInit();
-    if (GLEW_OK != err) {
-        /* Problem: glewInit failed, something is seriously wrong. */
-        LOG_ERROR << glewGetErrorString(err);
-        return nullptr;
-    }
-
-    // Enable depth test
-    glEnable(GL_DEPTH_TEST);
-    // Accept fragment if it closer to the camera than the former one
-    glDepthFunc(GL_LESS);
-    GL_CHECK_ERRORS;
-    LOG_DEBUG << "GL_DEPTH_TEST enabled";
-
-    return window;
-}
-
-
-void init_imgui(GLFWwindow *window) {
-    // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    // ImGui::StyleColorsClassic();
-
-    // Setup Platform/Renderer bindings
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 130");
-
-    io.Fonts->AddFontFromFileTTF("resources/fonts/Cousine-Regular.ttf", 15.0f);
-}
-
 
 int main(int argc, char** argv, char** env) {
     LogGlobalContext::instance()
         .attach(std::cout)
         .attach(std::cerr, Log::Level::Warning)
         .attach("gir1.log");
+
     LOG_INFO << "Welcome to GIR1";
 
-    glfwSetErrorCallback(glfw_error_callback);
-
-    int width = 1280;
-    int height = 720;
-
-    /* Create a windowed mode window and its OpenGL context */
-    auto window = init_window(width, height);
-    init_imgui(window);
-
-    Renderer::init();
-
-    LOG_INFO << "GIR1   v." << version;
-    LOG_INFO << "GLEW   v." << glewGetString(GLEW_VERSION);
-    LOG_INFO << "OpenGL v." << glGetString(GL_VERSION);
-    LOG_INFO << "Renderer: " << glGetString(GL_RENDERER);
+    Application app(1280, 720);
 
 #if LOAD_SKYBOX
     /* Setting skybox */
@@ -205,13 +111,13 @@ int main(int argc, char** argv, char** env) {
         glm::scale(glm::translate(glm::mat4(1.0f), light_source.position), glm::vec3(0.2));
 
     auto& input = KeyboardState::instance();
-    glfwGetCursorPos(window, &input.cursor_x, &input.cursor_y);
+    glfwGetCursorPos(app.window, &input.cursor_x, &input.cursor_y);
 
     Camera camera;
     double t = glfwGetTime();
     bool skybox_active = false;
 
-    glm::mat4 projection = glm::perspective(glm::radians(30.0f), (GLfloat)width / (GLfloat)height, 1.0f, 1000.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(30.0f), (GLfloat)app.width / (GLfloat)app.height, 1.0f, 1000.0f);
     shader.set_uniform_mat4f("u_projection", projection);
 #if LOAD_SKYBOX
     skybox_shader.set_uniform_mat4f("u_projection", projection);
@@ -219,7 +125,7 @@ int main(int argc, char** argv, char** env) {
     light_source_shader.set_uniform_mat4f("u_projection", projection);
 
     /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(app.window)) {
         /* Render here */
         Renderer::clear();
 
@@ -341,7 +247,7 @@ int main(int argc, char** argv, char** env) {
         }
 
         /* Swap front and back buffers */
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(app.window);
 
         /* Poll for and process events */
         glfwPollEvents();
