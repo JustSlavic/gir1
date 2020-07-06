@@ -11,7 +11,6 @@
 
 #define ASSERT(x) \
     if (!(x)) { \
-        LOG_CONTEXT(__FILE__); \
         LOG_ERROR << "Failed at " << __FILE__ << ':' << __LINE__; \
         std::exit(1); \
     } void SEMICOLON__()

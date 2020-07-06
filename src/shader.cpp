@@ -7,8 +7,6 @@
 #include <vector>
 
 
-LOG_CONTEXT("shader");
-
 Shader::~Shader() {
     glDeleteProgram(id); GL_CHECK_ERRORS;
 }

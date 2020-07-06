@@ -37,7 +37,6 @@
 #define CAPTURE_CURSOR 0
 #define LOAD_SKYBOX 0
 
-LOG_CONTEXT("main");
 
 static void glfw_error_callback(int error, const char* description) {
     LOG_ERROR << "GLFW failed: " << error << ": " << description;
@@ -45,7 +44,6 @@ static void glfw_error_callback(int error, const char* description) {
 
 
 GLFWwindow* init_window(int width, int height) {
-    LOG_CONTEXT("window.init");
     if (!glfwInit()) {
         LOG_ERROR << "Error: GLFW Init failed!";
         std::exit(ERROR_GLFW_FAILED);

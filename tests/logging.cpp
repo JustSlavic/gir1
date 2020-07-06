@@ -2,8 +2,6 @@
 #include <logging/logging.h>
 
 
-LOG_CONTEXT("Google test");
-
 TEST(Logging, Basic) {
     LogGlobalContext::instance().attach(std::cout);
     Log().debug() << "Hello debug sailor!";
@@ -19,7 +17,6 @@ TEST(Logging, LocalContext) {
     LOG_INFO << "Hello sailor!";
 
     {
-        LOG_CONTEXT("nested context");
         LOG_INFO << "Nested";
     }
 

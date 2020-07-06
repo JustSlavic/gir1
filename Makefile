@@ -39,6 +39,7 @@ CXXFLAGS = \
 	-std=$(CXX_STANDARD)
 
 CXXFLAGS += $(addprefix -I, $(INC_DIR))
+CXXFLAGS += -D_DEBUG
 
 LDFLAGS = \
 	$(addprefix -L, $(LIB_DIR)) \
@@ -173,6 +174,7 @@ test: bin/test
 # Prebuild step
 prebuild: version
 	mkdir -p bin
+	mkdir -p build
 
 
 # Postbuild step
