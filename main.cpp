@@ -35,7 +35,7 @@
 #include <logging/logging.h>
 
 #define CAPTURE_CURSOR 0
-#define LOAD_SKYBOX 0
+#define LOAD_SKYBOX 1
 
 
 static void glfw_error_callback(int error, const char* description) {
@@ -153,7 +153,7 @@ int main(int argc, char** argv, char** env) {
 
     skybox_shader.set_uniform_1i("u_Texture_skybox", 0);
 
-    Skybox skybox("resources/textures/skybox_8");
+    Skybox skybox("resources/textures/skybox_indigo");
     skybox.shader = &skybox_shader;
     skybox.transform = glm::scale(glm::mat4(1.0f), glm::vec3(500.0f));
 #endif
@@ -207,7 +207,7 @@ int main(int argc, char** argv, char** env) {
 
     Camera camera;
     double t = glfwGetTime();
-    bool skybox_active = false;
+    bool skybox_active = true;
 
     glm::mat4 projection = glm::perspective(glm::radians(30.0f), (GLfloat)width / (GLfloat)height, 1.0f, 1000.0f);
     shader.set_uniform_mat4f("u_projection", projection);
@@ -215,6 +215,8 @@ int main(int argc, char** argv, char** env) {
     skybox_shader.set_uniform_mat4f("u_projection", projection);
 #endif
     light_source_shader.set_uniform_mat4f("u_projection", projection);
+
+    LOG_INFO << "Press F3 to toggle skybox";
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
