@@ -68,7 +68,6 @@ HEADERS = \
     point_light \
     camera \
     input \
-    version \
     defines \
     utils \
     logging/logging \
@@ -91,7 +90,6 @@ SOURCES = \
     point_light \
     camera \
     input \
-    version \
     utils \
     logging/logging \
     logging/handler \
@@ -150,8 +148,8 @@ clean:
 PROJECT_LIB := build/$(SUB_DIR)/lib$(PROJECT).a
 PROJECT_EXE := bin/$(SUB_DIR)/$(PROJECT)
 
-$(PROJECT_EXE): main.cpp $(PROJECT_LIB) $(STATIC_LIBS)
-	g++ main.cpp $(PROJECT_LIB) $(STATIC_LIBS) -o $(PROJECT_EXE) $(CXXFLAGS) $(LDFLAGS)
+$(PROJECT_EXE): main.cpp build/$(SUB_DIR)/version.o $(PROJECT_LIB) $(STATIC_LIBS)
+	g++ main.cpp build/$(SUB_DIR)/version.o $(PROJECT_LIB) $(STATIC_LIBS) -o $(PROJECT_EXE) $(CXXFLAGS) $(LDFLAGS)
 
 $(PROJECT_LIB): $(OBJECTS)
 	ar rcvs $(PROJECT_LIB) $(OBJECTS)
