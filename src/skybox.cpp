@@ -56,24 +56,24 @@ Skybox::Skybox(const char *dir_path) {
 
     glGenBuffers(1, &vertex_buffer_id); GL_CHECK_ERRORS;
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id); GL_CHECK_ERRORS;
-    glBufferData(GL_ARRAY_BUFFER, sizeof(skybox_vertices), &skybox_vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skybox_vertices), &skybox_vertices, GL_STATIC_DRAW); GL_CHECK_ERRORS;
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(0); GL_CHECK_ERRORS;
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr); GL_CHECK_ERRORS;
 
-    glGenTextures(1, &texture_id);
+    glGenTextures(1, &texture_id); GL_CHECK_ERRORS;
     glBindTexture(GL_TEXTURE_CUBE_MAP, texture_id); GL_CHECK_ERRORS;
 
     i32 width, height, bits_per_pixel;
     stbi_set_flip_vertically_on_load(false);
 
     const char *face_names[] = {
-            "posx.jpg",
-            "negx.jpg",
-            "posy.jpg",
-            "negy.jpg",
-            "posz.jpg",
-            "negz.jpg",
+            "posx.png",
+            "negx.png",
+            "posy.png",
+            "negy.png",
+            "posz.png",
+            "negz.png",
     };
 
     for (int i = 0; i < 6; ++i) {
@@ -99,10 +99,12 @@ Skybox::Skybox(const char *dir_path) {
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    GL_CHECK_ERRORS;
 }
 
 Skybox::~Skybox() {
     glDeleteTextures(1, &texture_id);
+    GL_CHECK_ERRORS;
 }
 
 void Skybox::bind(unsigned int slot) const {
