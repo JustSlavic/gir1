@@ -181,19 +181,19 @@ int main(int argc, char** argv, char** env) {
 
     std::vector<ModelInstance> models(2);
     models[0].asset = &cube_asset;
-    models[0].transform = glm::mat4(1.0f);
+    models[0].transform = glm::translate(glm::mat4(1.0f), glm::vec3(-1.f, 0.f, 1.f));
 
     models[1].asset = &cube_asset;
     models[1].transform =
         glm::scale(
-        glm::translate(
-        glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 3.0f)),
+            glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 3.0f)),
         glm::vec3(2.0f));
 
 
     PointLight light_source(glm::vec3(1.0f, 3.0f, 3.0f), glm::vec3(1.0f));
     Material glowing_material;
     glowing_material.shader = &light_source_shader;
+    
     ModelAsset light_source_asset = ModelAsset::load_my_model("resources/models/cube.model");
     light_source_asset.material = &glowing_material;
 
@@ -202,10 +202,28 @@ int main(int argc, char** argv, char** env) {
     light_source_cube.transform =
         glm::scale(glm::translate(glm::mat4(1.0f), light_source.position), glm::vec3(0.2));
 
+    // ================ RAYMARCH INSTANCE ================ //
+    Shader raymarch_shader;
+    raymarch_shader.load_shader(Shader::Type::Vertex, "resources/shaders/raymarch.vs");
+    raymarch_shader.load_shader(Shader::Type::Fragment, "resources/shaders/raymarch.fs");
+    raymarch_shader.compile().bind();
+    Material raymarch_material;
+    raymarch_material.shader = &raymarch_shader;
+
+    ModelAsset raymarch_asset = ModelAsset::load_my_model("resources/models/cube.model");
+    raymarch_asset.material = &raymarch_material;
+
+    ModelInstance raymarch_cube;
+    raymarch_cube.asset = &raymarch_asset;
+    raymarch_cube.transform = glm::mat4(1.0f);
+    // =================================================== //
+
     auto& input = KeyboardState::instance();
     glfwGetCursorPos(window, &input.cursor_x, &input.cursor_y);
 
     Camera camera;
+    camera.translate_backwards(.5f);
+
     double t = glfwGetTime();
     bool skybox_active = true;
 
@@ -215,6 +233,7 @@ int main(int argc, char** argv, char** env) {
     skybox_shader.set_uniform_mat4f("u_projection", projection);
 #endif
     light_source_shader.set_uniform_mat4f("u_projection", projection);
+    raymarch_shader.set_uniform_mat4f("u_projection", projection);
 
 #if LOAD_SKYBOX
     LOG_INFO << "Press F3 to toggle skybox";
@@ -265,7 +284,7 @@ int main(int argc, char** argv, char** env) {
             light_source_shader.set_uniform_vec3f("u_light_color", light_source.diffuse);
             Renderer::draw(light_source_cube);
         }
-
+#if 1
         for (auto& model : models) {
             // Setting MVP components
             model.asset->material->shader->set_uniform_mat4f("u_model", model.transform);
@@ -286,6 +305,14 @@ int main(int argc, char** argv, char** env) {
             model.asset->material->shader->set_uniform_vec3f("u_view_position", camera.position);
             Renderer::draw(model);
         }
+#endif
+
+        raymarch_cube.asset->material->shader->set_uniform_vec3f("u_light.position", light_source.position);
+        raymarch_cube.asset->material->shader->set_uniform_vec3f("u_camera.position", camera.position);
+        raymarch_cube.asset->material->shader->set_uniform_vec3f("u_camera.direction", camera.direction);
+        raymarch_cube.asset->material->shader->set_uniform_mat4f("u_model", raymarch_cube.transform);
+        raymarch_cube.asset->material->shader->set_uniform_mat4f("u_view", view);
+        Renderer::draw(raymarch_cube);
 
         {
             /*  DEAR IM GUI */
@@ -326,6 +353,9 @@ int main(int argc, char** argv, char** env) {
                 // ImGui::Text("Cursor dr: (%5.2lf, %5.2lf)", input.cursor_dx, input.cursor_dy);
                 // ImGui::Text("LMB drag: (%5.2lf, %5.2lf)", input.LMB_drag_x, input.LMB_drag_y);
                 // ImGui::Text("RMB drag: (%5.2lf, %5.2lf)", input.RMB_drag_x, input.RMB_drag_y);
+                ImGui::Text("Camera{\n  position:(%5.2f, %5.2f, %5.2f),\n  direction(%5.2f, %5.2f, %5.2f)\n}", 
+                    camera.position.x, camera.position.y, camera.position.z, 
+                    camera.direction.x, camera.direction.y, camera.direction.z);
 
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS); dt = %.3f", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, dt);
                 ImGui::End();
