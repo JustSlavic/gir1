@@ -21,6 +21,7 @@ struct LayoutElement {
                 return sizeof(GLbyte);
             default:
                 ASSERT(false);
+                return -1;
         }
     }
 };
